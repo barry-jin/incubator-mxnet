@@ -576,6 +576,8 @@ FP32_FUNCS = [
     # Neural network
     'softmax',
     'log_softmax',
+    'masked_softmax',
+    'masked_log_softmax',
     'InstanceNorm',
     'LayerNorm',
     'GroupNorm',
@@ -591,6 +593,9 @@ FP32_FUNCS = [
     '_npx_deformable_convolution',
     '_npx_modulated_deformable_convolution',
     '_contrib_DeformablePSROIPooling',
+    '_contrib_sldwin_atten_score',
+    '_contrib_sldwin_atten_mask_like',
+    '_contrib_sldwin_atten_context',
     ]
 
 if Features().is_enabled('MKLDNN'):
