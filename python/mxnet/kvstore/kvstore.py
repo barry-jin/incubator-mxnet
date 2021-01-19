@@ -21,6 +21,7 @@
 import pickle
 import ctypes
 import os
+from . import _api_internal
 from ..ndarray import NDArray
 from ..ndarray import _ndarray_cls
 from ..base import _LIB, c_str
@@ -175,6 +176,7 @@ class KVStore(KVStoreBase):
         >>> print b
         <RowSparseNDArray 2x3 @cpu(0)>
         """
+        # _api_internal.init(self.handle, key, value)
         ckeys, cvals, use_str_keys = _ctype_key_value(key, value)
         if use_str_keys:
             check_call(_LIB.MXKVStoreInitEx(self.handle, mx_uint(len(ckeys)), ckeys, cvals))

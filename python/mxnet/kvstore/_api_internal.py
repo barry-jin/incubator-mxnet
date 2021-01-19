@@ -19,4 +19,4 @@
 
 import mxnet._ffi
 
-mxnet._ffi._init_api("cached_op", __name__)
+mxnet._ffi._init_api("kvstore", __name__)

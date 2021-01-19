@@ -18,3 +18,4 @@
 Acknowledgement: This file originates from incubator-tvm
 """
 from .function import _init_api, get_global_func
+from .node_generic import convert_to_node

@@ -17,4 +17,7 @@
 
 from .._ffi._cy3.core import get_global_func
 
-invoke_cachedOp = get_global_func("_cached_op.invoke")
+create_cachedOp = get_global_func("cached_op.create")
+invoke_cachedOp = get_global_func("cached_op.invoke")
+free_cachedOp = get_global_func("cached_op.free")
+get_optimized_symbol = get_global_func("cached_op.get_optimized_symbol")

@@ -46,36 +46,3 @@ cdef extern from "mxnet/runtime/ffi_helper.h" namespace "mxnet::runtime":
     cdef cppclass Float(ObjectRef):
         Float()
         Float(double)
-
-
-cdef inline ADT convert_tuple(tuple src_tuple) except *:
-    cdef uint32_t size = len(src_tuple)
-    cdef ADTBuilder builder = ADTBuilder(0, size)
-    for i in range(size):
-        builder.EmplaceInit(i, convert_object(src_tuple[i]))
-    return builder.Get()
-
-
-cdef inline ADT convert_list(list src) except *:
-    cdef uint32_t size = len(src)
-    cdef ADTBuilder builder = ADTBuilder(0, size)
-    for i in range(size):
-        builder.EmplaceInit(i, convert_object(src[i]))
-    return builder.Get()
-
-
-cdef inline ObjectRef convert_object(object src_obj) except *:
-    # We use this branch as a fast check for int.
-    # The Integral branch is slow, and it only captures numpy.int64, etc.
-    if isinstance(src_obj, int):
-        return Integer(<int64_t>src_obj)
-    elif isinstance(src_obj, tuple):
-        return convert_tuple(src_obj)
-    elif isinstance(src_obj, list):
-        return convert_list(src_obj)
-    elif isinstance(src_obj, Integral):
-        return Integer(<int64_t>src_obj)
-    elif isinstance(src_obj, float):
-        return Float(<double>src_obj)
-    else:
-        raise TypeError("Don't know how to convert type %s" % type(src_obj))

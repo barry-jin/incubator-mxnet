@@ -32,13 +32,20 @@ cdef inline int make_arg(object arg,
     """Pack arguments into c args mxnet call accept"""
     cdef unsigned long long ptr
 
-    if isinstance(arg, (list, tuple)):
-        temp_objs[0] = convert_object(arg)
-        value[0].v_handle = (<void*>(temp_objs[0].get()))
+    if isinstance(arg, (list, tuple, dict)):
+        arg = _FUNC_CONVERT_TO_NODE(arg)
+        value[0].v_handle = (<ObjectBase>arg).chandle
+        tcode[0] = kObjectHandle
+        temp_args.append(arg)
+    elif isinstance(arg, ObjectBase):
+        value[0].v_handle = (<ObjectBase>arg).chandle
         tcode[0] = kObjectHandle
     elif isinstance(arg, NDArrayBase):
         value[0].v_handle = <void*><size_t>(arg._get_handle())
         tcode[0] = kNDArrayHandle
+    elif isinstance(arg, PyNativeObject):
+        value[0].v_handle = (<ObjectBase>(arg.__mxnet_object__)).chandle
+        tcode[0] = kObjectHandle
     elif isinstance(arg, (int, long)):
         value[0].v_int64 = arg
         tcode[0] = kInt
@@ -53,9 +60,6 @@ cdef inline int make_arg(object arg,
     elif arg is None:
         value[0].v_handle = NULL
         tcode[0] = kNull
-    elif isinstance(arg, ObjectBase):
-        value[0].v_handle = (<ObjectBase>arg).chandle
-        tcode[0] = kObjectHandle
     elif isinstance(arg, Number):
         value[0].v_float64 = arg
         tcode[0] = kFloat
@@ -207,6 +211,7 @@ def get_global_func(name, allow_missing=False):
 
 _CLASS_OBJECT = None
 _CLASS_PACKED_FUNC = None
+_FUNC_CONVERT_TO_NODE = None
 
 def _set_class_object(obj_class):
     global _CLASS_OBJECT
@@ -215,3 +220,7 @@ def _set_class_object(obj_class):
 def _set_class_packed_func(func_class):
     global _CLASS_PACKED_FUNC
     _CLASS_PACKED_FUNC = func_class
+
+def _set_node_generic(func_convert_to_node):
+    global _FUNC_CONVERT_TO_NODE
+    _FUNC_CONVERT_TO_NODE = func_convert_to_node

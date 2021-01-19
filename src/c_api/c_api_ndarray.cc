@@ -33,6 +33,7 @@
 #include <nnvm/op_attr_types.h>
 #include <string>
 #include "./c_api_common.h"
+#include "../api/cached_op_api.h"
 #include "../common/utils.h"
 #include "../common/exec_utils.h"
 #include "../imperative/imperative_utils.h"
@@ -199,6 +200,20 @@ int MXCachedOpGetOptimizedSymbol(CachedOpHandle handle,
   *out = s;
   API_END_HANDLE_ERROR(delete s);
 }
+
+// int MXInvokeCachedOp(CachedOpHandle handle,
+//                      int num_inputs,
+//                      NDArrayHandle *inputs,
+//                      int default_dev_type,
+//                      int default_dev_id,
+//                      int *num_outputs,
+//                      NDArrayHandle **outputs,
+//                      const int **out_stypes) {  // outputs storage types
+//   API_BEGIN();
+//   InvokeCachedOpImpl(handle, num_inputs, &inputs, default_dev_type, default_dev_id,
+//                      num_outputs, &outputs, out_stypes);
+//   API_END();
+// }
 
 int MXInvokeCachedOp(CachedOpHandle handle,
                      int num_inputs,

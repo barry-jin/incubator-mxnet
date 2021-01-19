@@ -54,11 +54,12 @@ enum TypeIndex  {
   kMXNetTensor = 1,
   kMXNetClosure = 2,
   kMXNetADT = 3,
-  kRuntimeModule = 4,
-  kEllipsis = 5,
-  kSlice = 6,
-  kInteger = 7,
-  kFloat = 8,
+  kMXNetMap = 4,
+  kMXNetString = 5,
+  kEllipsis = 6,
+  kSlice = 7,
+  kInteger = 8,
+  kFloat = 9,
   kStaticIndexEnd,
   /*! \brief Type index is allocated during runtime. */
   kDynamic = kStaticIndexEnd
@@ -567,6 +568,8 @@ class ObjectRef {
 
   /*! \brief type indicate the container type. */
   using ContainerType = Object;
+  // Default type properties for the reference class.
+  static constexpr bool _type_is_nullable = true;
 
  protected:
   /*! \brief Internal pointer that backs the reference. */
@@ -585,6 +588,12 @@ class ObjectRef {
   static T DowncastNoCheck(ObjectRef ref) {
     return T(std::move(ref.data_));
   }
+  /*!
+   * \brief Clear the object ref data field without DecRef
+   *        after we successfully moved the field.
+   * \param ref The reference data.
+   */
+  static void FFIClearAfterMove(ObjectRef* ref) { ref->data_.data_ = nullptr; }
   /*!
    * \brief Internal helper function get data_ as ObjectPtr of ObjectType.
    * \note only used for internal dev purpose.
@@ -681,6 +690,11 @@ struct ObjectEqual {
   static DMLC_ATTRIBUTE_UNUSED uint32_t __make_Object_tidx ## _ ## TypeName ## __ = \
       TypeName::_GetOrAllocRuntimeTypeIndex()
 
+#define MXNET_DEFINE_DEFAULT_COPY_MOVE_AND_ASSIGN(TypeName) \
+  TypeName(const TypeName& other) = default;                \
+  TypeName(TypeName&& other) = default;                     \
+  TypeName& operator=(const TypeName& other) = default;     \
+  TypeName& operator=(TypeName&& other) = default;
 
 #define MXNET_DEFINE_OBJECT_REF_METHODS(TypeName, ParentType, ObjectName) \
   TypeName() {}                                                           \
@@ -702,6 +716,14 @@ struct ObjectEqual {
     return static_cast<ObjectName*>(data_.get());                             \
   }                                                                           \
   operator bool() const { return data_ != nullptr; }                          \
+  using ContainerType = ObjectName;
+
+#define MXNET_DEFINE_NOTNULLABLE_OBJECT_REF_METHODS(TypeName, ParentType, ObjectName)              \
+  explicit TypeName(::mxnet::runtime::ObjectPtr<::mxnet::runtime::Object> n) : ParentType(n) {}    \
+  MXNET_DEFINE_DEFAULT_COPY_MOVE_AND_ASSIGN(TypeName);                                             \
+  const ObjectName* operator->() const { return static_cast<const ObjectName*>(data_.get()); }     \
+  const ObjectName* get() const { return operator->(); }                                           \
+  static constexpr bool _type_is_nullable = false;                                                 \
   using ContainerType = ObjectName;
 
 // Implementations details below
@@ -794,6 +816,9 @@ template <typename RefType, typename ObjType>
 inline RefType GetRef(const ObjType* ptr) {
   static_assert(std::is_base_of<typename RefType::ContainerType, ObjType>::value,
                 "Can only cast to the ref of same container type");
+  if (!RefType::_type_is_nullable) {
+    CHECK(ptr != nullptr);
+  }
   return RefType(ObjectPtr<Object>(const_cast<Object*>(static_cast<const Object*>(ptr))));
 }
 
@@ -806,9 +831,14 @@ inline ObjectPtr<BaseType> GetObjectPtr(ObjType* ptr) {
 
 template <typename SubRef, typename BaseRef>
 inline SubRef Downcast(BaseRef ref) {
-  CHECK(ref->template IsInstance<typename SubRef::ContainerType>())
-      << "Downcast from " << ref->GetTypeKey() << " to "
-      << SubRef::ContainerType::_type_key << " failed.";
+  if (ref.defined()) {
+    CHECK(ref->template IsInstance<typename SubRef::ContainerType>())
+        << "Downcast from " << ref->GetTypeKey() << " to "
+        << SubRef::ContainerType::_type_key << " failed.";
+  } else {
+    CHECK(SubRef::_type_is_nullable) << "Downcast from nullptr to not nullable reference of "
+                                     << SubRef::ContainerType::_type_key;
+  }
   return SubRef(std::move(ref.data_));
 }
 

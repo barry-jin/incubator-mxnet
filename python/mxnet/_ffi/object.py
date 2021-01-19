@@ -23,22 +23,68 @@ from ..base import _LIB, check_call, c_str
 
 try:
     if int(os.environ.get("MXNET_ENABLE_CYTHON", True)) == 0:
-        from ._ctypes.function import _set_class_object
+        from ._ctypes.function import _set_class_object, _set_node_generic
         from ._ctypes.object import ObjectBase as _ObjectBase
-        from ._ctypes.object import _register_object
+        from ._ctypes.object import _register_object, PyNativeObject
     else:
-        from ._cy3.core import _set_class_object
+        from ._cy3.core import _set_class_object, _set_node_generic
         from ._cy3.core import ObjectBase as _ObjectBase
-        from ._cy3.core import _register_object
+        from ._cy3.core import _register_object, PyNativeObject
 except ImportError:
     if int(os.environ.get("MXNET_ENFORCE_CYTHON", False)) != 0:
         raise ImportError("Cython Module cannot be loaded but MXNET_ENFORCE_CYTHON=1")
-    from ._ctypes.function import _set_class_object
+    from ._ctypes.function import _set_class_object, _set_node_generic
     from ._ctypes.object import ObjectBase as _ObjectBase
-    from ._ctypes.object import _register_object
+    from ._ctypes.object import _register_object, PyNativeObject
+
+
+def _new_object(cls):
+    """Helper function for pickle"""
+    return cls.__new__(cls)
+
 
 class Object(_ObjectBase):
     """Base class for all mxnet's runtime objects."""
+
+    __slots__ = []
+
+    def __dir__(self):
+        class_names = dir(self.__class__)
+        fnames = _ffi_node_api.NodeListAttrNames(self)
+        size = fnames(-1)
+        return sorted([fnames(i) for i in range(size)] + class_names)
+
+    def __getattr__(self, name):
+        try:
+            return _ffi_node_api.NodeGetAttr(self, name)
+        except AttributeError:
+            raise AttributeError("%s has no attribute %s" % (str(type(self)), name))
+
+    def __hash__(self):
+        return _ffi_api.ObjectPtrHash(self)
+
+    def __eq__(self, other):
+        return self.same_as(other)
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __reduce__(self):
+        cls = type(self)
+        return (_new_object, (cls,), self.__getstate__())
+
+    def __getstate__(self):
+        handle = self.handle
+        if handle is not None:
+            return {"handle": _ffi_node_api.SaveJSON(self)}
+        return {"handle": None}
+
+    def __setstate__(self, state):
+        # pylint: disable=assigning-non-slot, assignment-from-no-return
+        handle = state["handle"]
+        self.handle = None
+        if handle is not None:
+            self.__init_handle_by_constructor__(_ffi_node_api.LoadJSON, handle)
 
 
 def register_object(type_key=None):
