@@ -527,6 +527,23 @@ def test_dc_hybridblock_dynamic_shape():
         net.initialize()
         _assert_dc_gluon(setup, net, numpy=True)
 
+def test_dc_hybridblock_graph_partition():
+    class MyBlock(mx.gluon.HybridBlock):
+        def __init__(self):
+            super().__init__()
+            self.dense = mx.gluon.nn.Dense(units=4)
+
+        def forward(self, x, idx):
+            return mx.nd.sum(mx.nd.sum(mx.nd.contrib.boolean_mask(self.dense(x), idx)))
+
+    def setup(*, nd):
+        x = mx.nd.array([[0, 1], [2, 3], [4, 5], [6, 7]])
+        idx = mx.nd.array([1, 1, 1, 1])
+        return [x, idx]
+
+    net = MyBlock()
+    net.initialize()
+    _assert_dc_gluon(setup, net, numpy=False, autograd=False)
 
 def test_dc_hybridblock_symbolblock_error():
     model = mx.gluon.nn.HybridSequential()
@@ -561,3 +578,33 @@ def test_dc_hybridblock_symbolblock_error():
     net.hybridize()
     with pytest.raises(RuntimeError):
         out_hybrid = net(data)  # Raises RuntimeError
+
+
+def test_indexing_shape_change():
+    class ConcatBlock(mx.gluon.nn.HybridBlock):
+        def forward(self, inputs):
+            return mx.np.concatenate([
+                inputs,
+                mx.np.pad(inputs[:,1:], ((0,0), (0,1))),
+            ])
+
+    net = ConcatBlock()
+    net.hybridize()
+    net(mx.np.random.uniform(size=(8, 16)))
+    net(mx.np.random.uniform(size=(8, 8)))
+
+
+def test_indexing_empty_shape():
+    @mx.util.use_np
+    class TestModel(mx.gluon.HybridBlock):
+        def forward(self, x):
+            return x[0]
+
+    net = TestModel()
+    net.hybridize()
+    try:
+        mx.npx.set_np()
+        net(mx.np.zeros((2, 2, 4, 0, 128)))
+        net(mx.np.zeros((2, 2, 4, 2, 128)))  # test indexing after input shape change
+    finally:
+        mx.npx.reset_np()

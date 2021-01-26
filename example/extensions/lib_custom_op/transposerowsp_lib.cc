@@ -60,7 +60,7 @@ void transpose(MXTensor& src, MXTensor& dst, const OpResource& res) {
     res.alloc_sparse(B, 0, mp.size());
     float *Bval = (float*) (B->data);
     int didx = 0, iidx = 0;
-    for(auto i : mp) {
+    for(const auto& i : mp) {
       B->indices[iidx++] = i.first;
       for(auto j : i.second) {
         Bval[didx++] = j;
@@ -186,6 +186,7 @@ MXReturnValue createOpState(const std::unordered_map<std::string, std::string>& 
   int count = attrs.count("test_kw") > 0 ? std::stoi(attrs.at("test_kw")) : 0;
   // creating stateful operator instance
   *op_inst = new MyStatefulTransposeRowSP(count, attrs);
+  (*op_inst)->ignore_warn = true;
   std::cout << "Info: stateful operator created" << std::endl;
   return MX_SUCCESS;
 }
