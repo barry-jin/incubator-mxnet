@@ -48,6 +48,7 @@ class NDArrayHandle : public ObjectRef {
   }
   inline NDArray* getArray() const {
     return static_cast<NDArray*>(&(static_cast<NDArrayHandleObj*>(data_.get())->value));
+    // return static_cast<NDArray*>(static_cast<NDArrayHandleObj*>(data_.get())->value);
   }
   MXNET_DEFINE_OBJECT_REF_METHODS(NDArrayHandle, ObjectRef, NDArrayHandleObj)
 };
