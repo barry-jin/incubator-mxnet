@@ -33,7 +33,6 @@
 #include <nnvm/op_attr_types.h>
 #include <string>
 #include "./c_api_common.h"
-#include "../api/cached_op_api.h"
 #include "../common/utils.h"
 #include "../common/exec_utils.h"
 #include "../imperative/imperative_utils.h"

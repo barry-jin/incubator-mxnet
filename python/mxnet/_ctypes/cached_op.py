@@ -23,7 +23,7 @@
 import ctypes
 
 from ..base import _LIB
-from ..base import c_str_array, c_handle_array
+from ..base import c_handle_array
 from ..base import NDArrayHandle, CachedOpHandle, SymbolHandle
 from ..base import check_call
 from .. import _global_var
@@ -88,52 +88,69 @@ class CachedOp(object):
         # New FFI only supports numpy ndarray
         out = kwargs.pop('out', None)
         default_ctx = kwargs.pop('default_ctx', None)
-        if out is not None:
-            original_output = out
-            if isinstance(out, NDArrayBase):
-                out = (out,)
-            num_output = ctypes.c_int(len(out))
-            output_vars = c_handle_array(out)
-            output_vars = ctypes.cast(output_vars, ctypes.POINTER(NDArrayHandle))
-        else:
-            original_output = None
-            output_vars = ctypes.POINTER(NDArrayHandle)()
-            num_output = ctypes.c_int(0)
         if kwargs:
             raise TypeError(
                 "CachedOp.__call__ got unexpected keyword argument(s): " + \
                 ', '.join(kwargs.keys()))
-
-        # return output stypes to avoid the c_api call for checking
-        # a handle's stype in _ndarray_cls
-        out_stypes = ctypes.POINTER(ctypes.c_int)()
-
-        # (None, ) -> []
-        if len(args) == 1 and args[0] is None:
-            args = []
-            assert default_ctx is not None, 'default_ctx is required if no input is provided'
+        if self.is_np_sym:
+            if len(args) == 1 and args[0] is None:
+                args = []
+            output_vars = _api_internal.invoke(
+                self.handle,
+                args,
+                out if isinstance(out, NDArrayBase) or out is None else (out, ),
+                default_ctx.device_typeid if default_ctx else None,
+                default_ctx.device_id if default_ctx else None
+            )
+            if out is not None:
+                return out
+            if len(output_vars) == 1:
+                return output_vars[0]
+            else:
+                return list(output_vars)
         else:
-            default_ctx = args[0].ctx if default_ctx is None else default_ctx
+            if out is not None:
+                original_output = out
+                if isinstance(out, NDArrayBase):
+                    out = (out,)
+                num_output = ctypes.c_int(len(out))
+                output_vars = c_handle_array(out)
+                output_vars = ctypes.cast(output_vars, ctypes.POINTER(NDArrayHandle))
+            else:
+                original_output = None
+                output_vars = ctypes.POINTER(NDArrayHandle)()
+                num_output = ctypes.c_int(0)
 
-        check_call(_LIB.MXInvokeCachedOp(
-            self.handle,
-            ctypes.c_int(len(args)),
-            c_handle_array(args),
-            ctypes.c_int(default_ctx.device_typeid),
-            ctypes.c_int(default_ctx.device_id),
-            ctypes.byref(num_output),
-            ctypes.byref(output_vars),
-            ctypes.byref(out_stypes)))
+            # return output stypes to avoid the c_api call for checking
+            # a handle's stype in _ndarray_cls
+            out_stypes = ctypes.POINTER(ctypes.c_int)()
 
-        if original_output is not None:
-            return original_output
-        create_ndarray_fn = _global_var._np_ndarray_cls if self.is_np_sym else _global_var._ndarray_cls
-        if num_output.value == 1:
-            return create_ndarray_fn(ctypes.cast(output_vars[0], NDArrayHandle),
-                                     stype=out_stypes[0])
-        else:
-            return [create_ndarray_fn(ctypes.cast(output_vars[i], NDArrayHandle),
-                                      stype=out_stypes[i]) for i in range(num_output.value)]
+            # (None, ) -> []
+            if len(args) == 1 and args[0] is None:
+                args = []
+                assert default_ctx is not None, 'default_ctx is required if no input is provided'
+            else:
+                default_ctx = args[0].ctx if default_ctx is None else default_ctx
+
+            check_call(_LIB.MXInvokeCachedOp(
+                self.handle,
+                ctypes.c_int(len(args)),
+                c_handle_array(args),
+                ctypes.c_int(default_ctx.device_typeid),
+                ctypes.c_int(default_ctx.device_id),
+                ctypes.byref(num_output),
+                ctypes.byref(output_vars),
+                ctypes.byref(out_stypes)))
+
+            if original_output is not None:
+                return original_output
+            create_ndarray_fn = _global_var._ndarray_cls
+            if num_output.value == 1:
+                return create_ndarray_fn(ctypes.cast(output_vars[0], NDArrayHandle),
+                                        stype=out_stypes[0])
+            else:
+                return [create_ndarray_fn(ctypes.cast(output_vars[i], NDArrayHandle),
+                                        stype=out_stypes[i]) for i in range(num_output.value)]
 
     def _register_op_hook(self, callback, monitor_all=False):
         """Install callback for monitor.
@@ -148,7 +165,9 @@ class CachedOp(object):
         cb_type = ctypes.CFUNCTYPE(None, ctypes.c_char_p, ctypes.c_char_p, NDArrayHandle, ctypes.c_void_p)
         if callback:
             self._monitor_callback = cb_type(_monitor_callback_wrapper(callback))
-        check_call(_LIB.MXCachedOpRegisterOpHook(
-            self.handle,
-            self._monitor_callback,
-            ctypes.c_int(monitor_all)))
+        # check_call(_LIB.MXCachedOpRegisterOpHook(
+        #     self.handle,
+        #     self._monitor_callback,
+        #     ctypes.c_int(monitor_all)))
+        callback_ptr = ctypes.cast(self._monitor_callback, ctypes.c_void_p)
+        _api_internal.register_op_hook(self.handle, callback_ptr, monitor_all)

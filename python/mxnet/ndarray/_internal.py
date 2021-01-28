@@ -27,7 +27,9 @@ try:
         from .._ctypes.ndarray import _imperative_invoke
         from .._global_var import _set_ndarray_class, _set_np_ndarray_class
     else:
-        from .._cy3.ndarray import NDArrayBase, CachedOp
+        from .._cy3.ndarray import NDArrayBase
+        # from .._cy3.ndarray import CachedOp
+        from .._ctypes.cached_op import CachedOp
         from .._cy3.ndarray import _imperative_invoke
         from .._global_var import _set_ndarray_class, _set_np_ndarray_class
 except ImportError:
