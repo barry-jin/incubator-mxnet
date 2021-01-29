@@ -45,7 +45,8 @@ jobs:
       - name: Build with Cython
         run: |
           python -m pip install cython
-          python python/setup.py build_ext --inplace --with-cython
+          cd python
+          python setup.py build_ext --inplace --with-cython
           export MXNET_ENABLE_CYTHON=1
 
       - name: Test project
