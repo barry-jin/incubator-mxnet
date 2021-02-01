@@ -192,34 +192,34 @@ cdef class FunctionBase:
         FuncCall(self.chandle, args, &ret_val, &ret_tcode)
         return make_ret(ret_val, ret_tcode, args)
 
-cdef object make_packed_func(MXNetFunctionHandle chandle, int is_global):
-    obj = _CLASS_PACKED_FUNC.__new__(_CLASS_PACKED_FUNC)
-    (<FunctionBase>obj).chandle = chandle
-    (<FunctionBase>obj).is_global = is_global
-    return obj
+# cdef object make_packed_func(MXNetFunctionHandle chandle, int is_global):
+#     obj = _CLASS_PACKED_FUNC.__new__(_CLASS_PACKED_FUNC)
+#     (<FunctionBase>obj).chandle = chandle
+#     (<FunctionBase>obj).is_global = is_global
+#     return obj
 
-def get_global_func(name, allow_missing=False):
-    cdef MXNetFunctionHandle chandle
-    CALL(MXNetFuncGetGlobal(c_str(name), &chandle))
-    if chandle != NULL:
-        return make_packed_func(chandle, True)
+# def get_global_func(name, allow_missing=False):
+#     cdef MXNetFunctionHandle chandle
+#     CALL(MXNetFuncGetGlobal(c_str(name), &chandle))
+#     if chandle != NULL:
+#         return make_packed_func(chandle, True)
 
-    if allow_missing:
-        return None
+#     if allow_missing:
+#         return None
 
-    raise ValueError("Cannot find global function %s" % name)
+#     raise ValueError("Cannot find global function %s" % name)
 
 _CLASS_OBJECT = None
-_CLASS_PACKED_FUNC = None
+# _CLASS_PACKED_FUNC = None
 _FUNC_CONVERT_TO_NODE = None
 
 def _set_class_object(obj_class):
     global _CLASS_OBJECT
     _CLASS_OBJECT = obj_class
 
-def _set_class_packed_func(func_class):
-    global _CLASS_PACKED_FUNC
-    _CLASS_PACKED_FUNC = func_class
+# def _set_class_packed_func(func_class):
+#     global _CLASS_PACKED_FUNC
+#     _CLASS_PACKED_FUNC = func_class
 
 def _set_node_generic(func_convert_to_node):
     global _FUNC_CONVERT_TO_NODE

@@ -114,7 +114,7 @@ MXNET_REGISTER_GLOBAL("cached_op.invoke")
   for (int i = 0; i < op->num_outputs(); ++i) {
     ObjectRef out = NDArrayHandle(ndoutputs[i]);
     outputs.push_back(out);
-    delete ndoutputs[i];
+    // delete ndoutputs[i];
   }
   *ret = runtime::ADT(0, outputs.begin(), outputs.end());
 });

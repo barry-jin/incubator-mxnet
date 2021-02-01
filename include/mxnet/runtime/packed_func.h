@@ -700,9 +700,9 @@ class MXNetRetValue : public MXNetPODValue_ {
   }
   MXNetRetValue& operator=(NDArrayHandle value) {
     this->SwitchToPOD(kNDArrayHandle);
-    NDArray* arr = new NDArray(value->value);
-    value_.v_handle = reinterpret_cast<void*>(arr);
-    // value_.v_handle = reinterpret_cast<void*>(value->value);
+    // NDArray* arr = new NDArray(value->value);
+    // value_.v_handle = reinterpret_cast<void*>(arr);
+    value_.v_handle = reinterpret_cast<void*>(value->value);
     return *this;
   }
   MXNetRetValue& operator=(const PythonArg& value) {

@@ -139,12 +139,12 @@ def __init_handle_by_constructor__(fconstructor, args):
 
 _object.__init_by_constructor__ = __init_handle_by_constructor__
 
-_CLASS_PACKED_FUNC = None
+# _CLASS_PACKED_FUNC = None
 _FUNC_CONVERT_TO_NODE = None
 
-def _set_class_packed_func(packed_func_class):
-    global _CLASS_PACKED_FUNC
-    _CLASS_PACKED_FUNC = packed_func_class
+# def _set_class_packed_func(packed_func_class):
+#     global _CLASS_PACKED_FUNC
+#     _CLASS_PACKED_FUNC = packed_func_class
 
 def _set_node_generic(func_convert_to_node):
     global _FUNC_CONVERT_TO_NODE
