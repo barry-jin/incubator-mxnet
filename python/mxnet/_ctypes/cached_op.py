@@ -21,7 +21,6 @@
 """CachedOp API."""
 
 import ctypes
-import time
 
 from ..base import _LIB
 from ..base import c_handle_array
@@ -103,8 +102,8 @@ class CachedOp(object):
             )
             # if out is not None:
             #     return out
-            if len(output_vars) == 1:
-                return output_vars[0]
+            if isinstance(output_vars, NDArrayBase):
+                return output_vars
             else:
                 return list(output_vars)
         else:
