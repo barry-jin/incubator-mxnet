@@ -21,6 +21,7 @@
 """CachedOp API."""
 
 import ctypes
+import time
 
 from ..base import _LIB
 from ..base import c_handle_array
@@ -59,7 +60,6 @@ class CachedOp(object):
         flags = {key: str(value) for key, value in flags}
         self.handle = CachedOpHandle(_api_internal.create(
             sym.handle,
-            len(flags),
             flags,
             thread_safe
         ))
@@ -86,29 +86,33 @@ class CachedOp(object):
     def __call__(self, *args, **kwargs):
         """ctypes implementation of imperative invoke wrapper"""
         # New FFI only supports numpy ndarray
-        out = kwargs.pop('out', None)
         default_ctx = kwargs.pop('default_ctx', None)
-        if kwargs:
-            raise TypeError(
-                "CachedOp.__call__ got unexpected keyword argument(s): " + \
-                ', '.join(kwargs.keys()))
         if self.is_np_sym:
             if len(args) == 1 and args[0] is None:
                 args = []
+            type_id = default_ctx.device_typeid if default_ctx else None
+            device_id = default_ctx.device_id if default_ctx else None
+            # out_arg = out if out and not isinstance(out, NDArrayBase) else (out, )
             output_vars = _api_internal.invoke(
                 self.handle,
-                args,
-                out if isinstance(out, NDArrayBase) or out is None else (out, ),
-                default_ctx.device_typeid if default_ctx else None,
-                default_ctx.device_id if default_ctx else None
+                # len(args),
+                *args,
+                type_id,
+                device_id
+                # *out_arg
             )
-            if out is not None:
-                return out
+            # if out is not None:
+            #     return out
             if len(output_vars) == 1:
                 return output_vars[0]
             else:
                 return list(output_vars)
         else:
+            out = kwargs.pop('out', None)
+            if kwargs:
+                raise TypeError(
+                    "CachedOp.__call__ got unexpected keyword argument(s): " + \
+                    ', '.join(kwargs.keys()))
             if out is not None:
                 original_output = out
                 if isinstance(out, NDArrayBase):

@@ -64,40 +64,33 @@ MXNET_REGISTER_GLOBAL("cached_op.invoke")
   // was called with thread_safe=true
   CachedOp* op = dynamic_cast<CachedOp*>(op_shared.get());
 
-  ObjectRef inputs_obj = args[1];
-  const auto& adt_inputs = Downcast<runtime::ADT>(inputs_obj);
-  int num_inputs = static_cast<int>(adt_inputs.size());
+  // ObjectRef inputs_obj = args[1];
+  // const auto& adt_inputs = Downcast<runtime::ADT>(inputs_obj);
+  // int num_inputs = static_cast<int>(adt_inputs.size());
+  // std::vector<NDArray*> ndinputs;
+  // ndinputs.reserve(num_inputs);
+  // for (int i = 0; i < num_inputs; ++i) {
+  //   const auto& temp_handle = Downcast<NDArrayHandle>(adt_inputs[i]);
+  //   // ndinputs.push_back(const_cast<NDArray*>(reinterpret_cast<const NDArray*>(&(temp_handle->value))));
+  //   ndinputs.push_back(temp_handle.getArray());
+  // }
+  int args_size = args.size();
+  // int num_inputs = args[1];
   std::vector<NDArray*> ndinputs;
-  ndinputs.reserve(num_inputs);
-  for (int i = 0; i < num_inputs; ++i) {
-    const auto& temp_handle = Downcast<NDArrayHandle>(adt_inputs[i]);
-    // ndinputs.push_back(const_cast<NDArray*>(reinterpret_cast<const NDArray*>(&(temp_handle->value))));
-    ndinputs.push_back(temp_handle.getArray());
+  ndinputs.reserve(args_size - 3);
+  for (int i = 1; i < args_size - 2; ++i) {
+    ndinputs.push_back(args[i].operator mxnet::NDArray*());
   }
-
-  ObjectRef outputs_obj = args[2];  
+  
   std::vector<NDArray*> ndoutputs;
   ndoutputs.reserve(op->num_outputs());
-  if (args[2].type_code() == kNull) {
-    for (int i = 0; i < op->num_outputs(); ++i) ndoutputs.push_back(new NDArray());
-  } else {
-    const auto& adt_outputs = Downcast<runtime::ADT>(outputs_obj);
-    int array_size = static_cast<int>(adt_outputs.size());
-    CHECK_EQ(array_size, op->num_outputs())
-        << "CachedOp expects " << op->num_outputs() << " outputs, but "
-        << array_size << " was given.";
-    for (int i = 0; i < array_size; ++i) {
-      const auto& temp_handle = Downcast<NDArrayHandle>(adt_outputs[i]);
-      // ndoutputs.push_back(const_cast<NDArray*>(reinterpret_cast<const NDArray*>(&(temp_handle->value))));
-      ndoutputs.push_back(temp_handle.getArray());
-    }
-  }
+  for (int i = 0; i < op->num_outputs(); ++i) ndoutputs.push_back(new NDArray());
 
   int default_dev_type;
   int default_dev_id;
-  if (args[3].type_code() != kNull) {
-    default_dev_type = args[3];
-    default_dev_id = args[4];
+  if (args[args_size - 2].type_code() != kNull) {
+    default_dev_type = args[args_size - 2];
+    default_dev_id = args[args_size - 1];
   } else {
     const Context &ctx = ndinputs[0]->ctx();
     default_dev_type = ctx.dev_type;
@@ -114,7 +107,7 @@ MXNET_REGISTER_GLOBAL("cached_op.invoke")
   for (int i = 0; i < op->num_outputs(); ++i) {
     ObjectRef out = NDArrayHandle(ndoutputs[i]);
     outputs.push_back(out);
-    // delete ndoutputs[i];
+    delete ndoutputs[i];
   }
   *ret = runtime::ADT(0, outputs.begin(), outputs.end());
 });
@@ -122,10 +115,10 @@ MXNET_REGISTER_GLOBAL("cached_op.invoke")
 MXNET_REGISTER_GLOBAL("cached_op.create")
 .set_body([](runtime::MXNetArgs args, runtime::MXNetRetValue* ret) {
   nnvm::Symbol* sym = static_cast<nnvm::Symbol*>(static_cast<void*>(args[0]));
-  int num_flags = args[1];
-  Object* flags_ptr = static_cast<Object*>(args[2].value().v_handle);
+  Object* flags_ptr = static_cast<Object*>(args[1].value().v_handle);
   auto* n = static_cast<const runtime::MapObj*>(flags_ptr);
-  bool thread_safe = args[3];
+  int num_flags = static_cast<int>(n->size());
+  bool thread_safe = args[2];
   std::vector<std::pair<std::string, std::string> > flags;
   flags.reserve(num_flags);
   for (const auto& kv : *n) {

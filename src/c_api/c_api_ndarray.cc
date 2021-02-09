@@ -159,46 +159,46 @@ int MXImperativeInvoke(AtomicSymbolCreator creator,
   API_END();
 }
 
-int MXCreateCachedOp(SymbolHandle handle,
-                     int num_flags,
-                     const char** keys,
-                     const char** vals,
-                     CachedOpHandle *out,
-                     bool thread_safe) {
-  nnvm::Symbol* sym = static_cast<nnvm::Symbol*>(handle);
-  API_BEGIN();
-  std::vector<std::pair<std::string, std::string> > flags;
-  flags.reserve(num_flags);
-  for (int i = 0; i < num_flags; ++i) {
-    flags.emplace_back(keys[i], vals[i]);
-  }
-  if (!thread_safe) {
-    *out = new CachedOpPtr(new CachedOp(*sym, flags));
-  } else {
-    *out = new CachedOpPtr(new CachedOpThreadSafe(*sym, flags));
-  }
-  API_END();
-}
+// int MXCreateCachedOp(SymbolHandle handle,
+//                      int num_flags,
+//                      const char** keys,
+//                      const char** vals,
+//                      CachedOpHandle *out,
+//                      bool thread_safe) {
+//   nnvm::Symbol* sym = static_cast<nnvm::Symbol*>(handle);
+//   API_BEGIN();
+//   std::vector<std::pair<std::string, std::string> > flags;
+//   flags.reserve(num_flags);
+//   for (int i = 0; i < num_flags; ++i) {
+//     flags.emplace_back(keys[i], vals[i]);
+//   }
+//   if (!thread_safe) {
+//     *out = new CachedOpPtr(new CachedOp(*sym, flags));
+//   } else {
+//     *out = new CachedOpPtr(new CachedOpThreadSafe(*sym, flags));
+//   }
+//   API_END();
+// }
 
-int MXFreeCachedOp(CachedOpHandle handle) {
-  CachedOpPtr* g = static_cast<CachedOpPtr*>(handle);
-  API_BEGIN();
-  delete g;
-  API_END();
-}
+// int MXFreeCachedOp(CachedOpHandle handle) {
+//   CachedOpPtr* g = static_cast<CachedOpPtr*>(handle);
+//   API_BEGIN();
+//   delete g;
+//   API_END();
+// }
 
-/*!
- * \brief get optimized graph from the cached op
- */
-int MXCachedOpGetOptimizedSymbol(CachedOpHandle handle,
-                                 SymbolHandle *out) {
-  auto s = new nnvm::Symbol();
-  API_BEGIN();
-  CachedOpPtr op = *static_cast<CachedOpPtr*>(handle);
-  *s = op->GetOptimizedSymbol();
-  *out = s;
-  API_END_HANDLE_ERROR(delete s);
-}
+// /*!
+//  * \brief get optimized graph from the cached op
+//  */
+// int MXCachedOpGetOptimizedSymbol(CachedOpHandle handle,
+//                                  SymbolHandle *out) {
+//   auto s = new nnvm::Symbol();
+//   API_BEGIN();
+//   CachedOpPtr op = *static_cast<CachedOpPtr*>(handle);
+//   *s = op->GetOptimizedSymbol();
+//   *out = s;
+//   API_END_HANDLE_ERROR(delete s);
+// }
 
 // int MXInvokeCachedOp(CachedOpHandle handle,
 //                      int num_inputs,
@@ -412,25 +412,25 @@ int MXAutogradGetSymbol(NDArrayHandle handle, SymbolHandle *out) {
   API_END();
 }
 
-int MXCachedOpRegisterOpHook(NDArrayHandle handle,
-                             CachedOpMonitorCallback callback,
-                             bool monitor_all) {
-  API_BEGIN();
-  CachedOpMonitorCallback callback_temp = nullptr;
-  std::function<void(const char *, const char *, void*)> clbk;
-  if (callback) {
-    callback_temp = callback;
-    clbk = [callback_temp](const char *name, const char *opr_name,
-                           void *handle) {
-      callback_temp(name, opr_name, handle);
-    };
-  } else {
-      clbk = nullptr;
-  }
-  CachedOpPtr op = *static_cast<CachedOpPtr *>(handle);
-  op->RegisterOpHook(clbk, monitor_all);
-  API_END();
-}
+// int MXCachedOpRegisterOpHook(NDArrayHandle handle,
+//                              CachedOpMonitorCallback callback,
+//                              bool monitor_all) {
+//   API_BEGIN();
+//   CachedOpMonitorCallback callback_temp = nullptr;
+//   std::function<void(const char *, const char *, void*)> clbk;
+//   if (callback) {
+//     callback_temp = callback;
+//     clbk = [callback_temp](const char *name, const char *opr_name,
+//                            void *handle) {
+//       callback_temp(name, opr_name, handle);
+//     };
+//   } else {
+//       clbk = nullptr;
+//   }
+//   CachedOpPtr op = *static_cast<CachedOpPtr *>(handle);
+//   op->RegisterOpHook(clbk, monitor_all);
+//   API_END();
+// }
 
 int MXNDArrayIsDeferredCompute(int *curr) {
   API_BEGIN();

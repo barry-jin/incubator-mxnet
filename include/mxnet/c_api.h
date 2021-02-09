@@ -1311,27 +1311,27 @@ MXNET_DLL int MXAutogradBackwardEx(uint32_t num_output,
  */
 MXNET_DLL int MXAutogradGetSymbol(NDArrayHandle handle, SymbolHandle *out);
 
-/*!
- * \brief create cached operator, allows to choose thread_safe version
- * of cachedop
- */
-MXNET_DLL int MXCreateCachedOp(SymbolHandle handle,
-                               int num_flags,
-                               const char** keys,
-                               const char** vals,
-                               CachedOpHandle *out,
-                               bool thread_safe DEFAULT(false));
+// /*!
+//  * \brief create cached operator, allows to choose thread_safe version
+//  * of cachedop
+//  */
+// MXNET_DLL int MXCreateCachedOp(SymbolHandle handle,
+//                                int num_flags,
+//                                const char** keys,
+//                                const char** vals,
+//                                CachedOpHandle *out,
+//                                bool thread_safe DEFAULT(false));
 
-/*!
- * \brief free cached operator
- */
-MXNET_DLL int MXFreeCachedOp(CachedOpHandle handle);
+// /*!
+//  * \brief free cached operator
+//  */
+// MXNET_DLL int MXFreeCachedOp(CachedOpHandle handle);
 
-/*!
- * \brief get optimized graph from the cached op
- */
-MXNET_DLL int MXCachedOpGetOptimizedSymbol(CachedOpHandle handle,
-                                           SymbolHandle *out);
+// /*!
+//  * \brief get optimized graph from the cached op
+//  */
+// MXNET_DLL int MXCachedOpGetOptimizedSymbol(CachedOpHandle handle,
+//                                            SymbolHandle *out);
 
 /*!
  * \brief invoke a cached op
@@ -1354,12 +1354,12 @@ MXNET_DLL int MXInvokeCachedOp(CachedOpHandle handle,
                                NDArrayHandle **outputs,
                                const int** out_stypes);
 
-/*!
- * \brief cached op set monitor callback
- */
-MXNET_DLL int MXCachedOpRegisterOpHook(NDArrayHandle handle,
-                                       CachedOpMonitorCallback callback,
-                                       bool monitor_all);
+// /*!
+//  * \brief cached op set monitor callback
+//  */
+// MXNET_DLL int MXCachedOpRegisterOpHook(NDArrayHandle handle,
+//                                        CachedOpMonitorCallback callback,
+//                                        bool monitor_all);
 
 /*!
  * \brief Get current status of deferred compute mode
