@@ -690,10 +690,6 @@ build_ubuntu_gpu_large_tensor() {
     ninja
 }
 
-build_ubuntu_blc() {
-    echo "pass"
-}
-
 # Testing
 
 sanity_check() {
@@ -1027,7 +1023,7 @@ nightly_test_large_tensor() {
     set -ex
     export PYTHONPATH=./python/
     export DMLC_LOG_STACK_TRACE_DEPTH=100
-    pytest --forked tests/nightly/test_np_large_array.py
+    pytest -s --exitfirst --verbose --timeout=7200 tests/nightly/test_np_large_array.py
 }
 
 #Tests Model backwards compatibility on MXNet
@@ -1343,12 +1339,6 @@ build_static_python_cu102() {
     export CXXFLAGS="-fabi-version=11 -fabi-compat-version=7"
     ./ci/publish/python/build.sh
     popd
-}
-
-# broken_link_checker
-broken_link_checker() {
-    set -ex
-    ./tests/nightly/broken_link_checker_test/broken_link_checker.sh
 }
 
 # artifact repository unit tests

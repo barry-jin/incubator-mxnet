@@ -3021,6 +3021,7 @@ def test_np_binary_funcs():
                       [[_np.float16, _np.float32, _np.float64], [_np.int32]]),
         'power': (1.0, 3.0, [lambda y, x1, x2: _np.power(x1, x2 - 1.0) * x2],
                              [lambda y, x1, x2: _np.power(x1, x2) * _np.log(x1)]),
+        'gcd': (-100, 100, [None], None, [[_np.int32]]),
         'lcm': (-100, 100, [None], None, [[_np.int32]]),
         'bitwise_and': (-100, 100, [None], None, [[_np.int32]]),
         'bitwise_xor': (-100, 100, [None], None, [[_np.int32]]),
@@ -8325,7 +8326,7 @@ def test_np_pad():
         def hybrid_forward(self,F,A,**kwargs):
             return F.np.pad(A, self._pad_width, mode=self._mode, **kwargs)
 
-    shapes = [(1,5), (2,2), (2,2), (3,3), (2,3), (3,4,5)]
+    shapes = [6, (1,5), (2,2), (2,2), (3,3), (2,3), (3,4,5)]
     dtypes = [np.int8, np.uint8, np.int32, np.int64, np.float16, np.float32, np.float64]
     mode = ['constant', 'reflect', 'symmetric', 'edge', 'minimum', 'maximum']
     for hybridize, shape, dtype, in itertools.product([False,True], shapes, dtypes):
