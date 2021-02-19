@@ -41,21 +41,6 @@ MXNET_REGISTER_GLOBAL("_api.MapVSum")
   *ret = all;
 });
 
-// MXNET_REGISTER_GLOBAL("cached_op.invoke")
-// .set_body([](runtime::MXNetArgs args, runtime::MXNetRetValue* ret) {
-//   CachedOpHandle handle = static_cast<CachedOpHandle>(static_cast<void*>(args[0]));
-//   int num_inputs = args[1];
-//   NDArrayHandle **inputs = static_cast<NDArrayHandle**>(static_cast<void*>(args[2]));
-//   int default_dev_type = args[3];
-//   int default_dev_id = args[4];
-//   int *num_outputs = static_cast<int*>(static_cast<void*>(args[5]));
-//   NDArrayHandle ***outputs = static_cast<NDArrayHandle ***>(static_cast<void*>(args[6]));
-//   const int **out_stypes = static_cast<const int**>(static_cast<void*>(args[7]));
-
-//   InvokeCachedOpImpl(handle, num_inputs, inputs, default_dev_type, default_dev_id,
-//                      num_outputs, outputs, out_stypes);
-// });
-
 MXNET_REGISTER_GLOBAL("cached_op.invoke")
 .set_body([](runtime::MXNetArgs args, runtime::MXNetRetValue* ret) {
   CachedOpPtr op_shared = *static_cast<CachedOpPtr*>(
@@ -64,33 +49,33 @@ MXNET_REGISTER_GLOBAL("cached_op.invoke")
   // was called with thread_safe=true
   CachedOp* op = dynamic_cast<CachedOp*>(op_shared.get());
 
-  // ObjectRef inputs_obj = args[1];
-  // const auto& adt_inputs = Downcast<runtime::ADT>(inputs_obj);
-  // int num_inputs = static_cast<int>(adt_inputs.size());
-  // std::vector<NDArray*> ndinputs;
-  // ndinputs.reserve(num_inputs);
-  // for (int i = 0; i < num_inputs; ++i) {
-  //   const auto& temp_handle = Downcast<NDArrayHandle>(adt_inputs[i]);
-  //   // ndinputs.push_back(const_cast<NDArray*>(reinterpret_cast<const NDArray*>(&(temp_handle->value))));
-  //   ndinputs.push_back(temp_handle.getArray());
-  // }
+  int num_inputs = args[1];
   int args_size = args.size();
-  // int num_inputs = args[1];
   std::vector<NDArray*> ndinputs;
-  ndinputs.reserve(args_size - 3);
-  for (int i = 1; i < args_size - 2; ++i) {
-    ndinputs.push_back(args[i].operator mxnet::NDArray*());
+  ndinputs.reserve(num_inputs);
+  for (int i = 2; i < num_inputs + 2; ++i) {
+    ndinputs.push_back(static_cast<mxnet::NDArray*>(args[i]));
   }
-  
+
   std::vector<NDArray*> ndoutputs;
   ndoutputs.reserve(op->num_outputs());
-  for (int i = 0; i < op->num_outputs(); ++i) ndoutputs.push_back(new NDArray());
+  if (args[num_inputs + 4].type_code() == kNull) {
+    for (int i = 0; i < op->num_outputs(); ++i) ndoutputs.push_back(new NDArray());
+  } else {
+    int array_size = args_size - num_inputs - 4;
+    CHECK_EQ(array_size, op->num_outputs())
+        << "CachedOp expects " << op->num_outputs() << " outputs, but "
+        << array_size << " was given.";
+    for (int i = num_inputs + 4; i < array_size; ++i) {
+      ndoutputs.push_back(args[i].operator mxnet::NDArray*());
+    }
+  }
 
   int default_dev_type;
   int default_dev_id;
-  if (args[args_size - 2].type_code() != kNull) {
-    default_dev_type = args[args_size - 2];
-    default_dev_id = args[args_size - 1];
+  if (args[num_inputs + 2].type_code() != kNull) {
+    default_dev_type = args[num_inputs + 2];
+    default_dev_id = args[num_inputs + 3];
   } else {
     const Context &ctx = ndinputs[0]->ctx();
     default_dev_type = ctx.dev_type;
@@ -114,7 +99,6 @@ MXNET_REGISTER_GLOBAL("cached_op.invoke")
     }
     *ret = runtime::ADT(0, outputs.begin(), outputs.end());
   }
-
 });
 
 MXNET_REGISTER_GLOBAL("cached_op.create")

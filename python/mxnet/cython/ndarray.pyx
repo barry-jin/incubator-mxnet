@@ -77,6 +77,57 @@ cdef NewArray(NDArrayHandle handle, int stype=-1, int is_np_array=0):
     create_array_fn = _global_var._np_ndarray_cls if is_np_array else _global_var._ndarray_cls
     return create_array_fn(_ctypes.cast(<unsigned long long>handle, _ctypes.c_void_p), stype=stype)
 
+def call_cached_op(*args, out=None, default_ctx=None):
+    cdef vector[NDArrayHandle] ndvars
+    cdef vector[NDArrayHandle] output_vars
+    cdef NDArrayHandle* p_output_vars
+    cdef NDArrayHandle ret_handle
+    cdef int default_ctx_type
+    cdef int default_ctx_dev_id
+    cdef int num_output
+    cdef const int* p_output_stypes
+    cdef CachedOpHandle chandle
+
+    if len(args) == 1 and args[0] is None:
+        args = []
+        assert default_ctx is not None, 'default_ctx is required if no input is provided'
+    else:
+        default_ctx = args[0].ctx if default_ctx is None else default_ctx
+    for i in args:
+        ndvars.push_back((<NDArrayBase>i).chandle)
+
+    original_output = None
+    if out is not None:
+        original_output = out
+        if isinstance(out, NDArrayBase):
+            output_vars.push_back((<NDArrayBase>out).chandle)
+        else:
+            for i in out:
+                output_vars.push_back((<NDArrayBase>i).chandle)
+
+    num_output = output_vars.size()
+    if output_vars.size() == 0:
+        p_output_vars = NULL
+    else:
+        p_output_vars = &output_vars[0]
+    
+    CALL(MXInvokeCachedOp(
+        chandle,
+        <int>len(args),
+        &ndvars[0] if ndvars.size() != 0 else NULL,
+        <int>(default_ctx.device_typeid),
+        <int>(default_ctx.device_id),
+        &num_output,
+        &p_output_vars,
+        &p_output_stypes))
+    
+    if original_output is not None:
+        return original_output
+    if num_output == 1:
+        return NewArray(p_output_vars[0], p_output_stypes[0], True)
+    else:
+        return [NewArray(p_output_vars[i], p_output_stypes[i], True) for i in range(num_output)]
+
 def _imperative_invoke(handle, ndargs, keys, vals, out, is_np_op=0, output_is_list=0):
     """cython implementation of imperative invoke wrapper"""
     cdef unsigned long long ihandle = handle
@@ -125,7 +176,6 @@ def _imperative_invoke(handle, ndargs, keys, vals, out, is_np_op=0, output_is_li
         CBeginPtr(param_keys),
         CBeginPtr(param_vals),
         &p_output_stypes))
-
     if original_output is not None:
         return original_output
     if num_output == 1 and not output_is_list:
