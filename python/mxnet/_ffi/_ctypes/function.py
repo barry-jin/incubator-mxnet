@@ -21,19 +21,21 @@ Function configuration API.
 Acknowledgement: This file originates from incubator-tvm
 """
 import ctypes
+import traceback
 from numbers import Number, Integral
 import numpy as onp
 
-from ...base import get_last_ffi_error, _LIB, check_call
+from ...base import get_last_ffi_error, _LIB, check_call, py2cerror
 from ..base import c_str
-from .types import MXNetValue, TypeCode
-from .types import RETURN_SWITCH
+from .types import MXNetValue, TypeCode, MXNetPackedCFunc, MXNetCFuncFinalizer
+from .types import RETURN_SWITCH, C_TO_PY_ARG_SWITCH
 from ..._ctypes.ndarray import NDArrayBase
 from .object import ObjectBase, PyNativeObject, _set_class_object
 from . import object as _object
 
 ObjectHandle = ctypes.c_void_p
 FunctionHandle = ctypes.c_void_p
+MXRetValueHandle = ctypes.c_void_p
 
 def _make_packed_func(handle, is_global):
     """Make a packed function class"""
@@ -53,6 +55,65 @@ def _get_global_func(name, allow_missing=False):
 
     raise ValueError("Cannot find global function %s" % name)
 
+def _ctypes_free_resource(rhandle):
+    """callback to free resources when it it not needed."""
+    pyobj = ctypes.cast(rhandle, ctypes.py_object)
+    ctypes.pythonapi.Py_DecRef(pyobj)
+
+
+# Global callback that is always alive
+MXNET_FREE_PYOBJ = MXNetCFuncFinalizer(_ctypes_free_resource)
+
+def convert_to_mxnet_func(pyfunc):
+    """Convert a python function to MXNET function
+
+    Parameters
+    ----------
+    pyfunc : python function
+        The python function to be converted.
+
+    Returns
+    -------
+    mxnetfunc: mxnet.nd.Function
+        The converted tvm function.
+    """
+    local_pyfunc = pyfunc
+
+    def cfun(args, type_codes, num_args, ret, _):
+        """ ctypes function """
+        num_args = num_args.value if isinstance(num_args, ctypes.c_int) else num_args
+        pyargs = (C_TO_PY_ARG_SWITCH[type_codes[i]](args[i]) for i in range(num_args))
+        # pylint: disable=broad-except
+        try:
+            rv = local_pyfunc(*pyargs)
+        except Exception:
+            msg = traceback.format_exc()
+            msg = py2cerror(msg)
+            _LIB.MXAPISetLastError(c_str(msg))
+            return -1
+
+        if rv is not None:
+            if isinstance(rv, tuple):
+                raise ValueError("PackedFunction can only support one return value")
+            temp_args = []
+            values, tcodes, _ = _make_mxnet_args((rv,), temp_args)
+            if not isinstance(ret, MXRetValueHandle):
+                ret = MXRetValueHandle(ret)
+            if _LIB.MXCFuncSetReturn(ret, values, tcodes, ctypes.c_int(1)) != 0:
+                raise get_last_ffi_error()
+            _ = temp_args
+            _ = rv
+        return 0
+
+    handle = FunctionHandle()
+    f = MXNetPackedCFunc(cfun)
+
+    pyobj = ctypes.py_object(f)
+    ctypes.pythonapi.Py_IncRef(pyobj)
+    if _LIB.TVMFuncCreateFromCFunc(f, pyobj, MXNET_FREE_PYOBJ, ctypes.byref(handle)) != 0:
+        raise get_last_ffi_error()
+    return _make_packed_func(handle, False)
+
 def _make_mxnet_args(args, temp_args):
     """Pack arguments into c args mxnet call accept"""
     num_args = len(args)
@@ -62,12 +123,12 @@ def _make_mxnet_args(args, temp_args):
         if isinstance(arg, NDArrayBase):
             values[i].v_handle = arg.handle
             type_codes[i] = TypeCode.NDARRAYHANDLE
-        elif isinstance(arg, Integral):
-            values[i].v_int64 = arg
-            type_codes[i] = TypeCode.INT
         elif isinstance(arg, ObjectBase):
             values[i].v_handle = arg.handle
             type_codes[i] = TypeCode.OBJECT_HANDLE
+        elif isinstance(arg, Integral):
+            values[i].v_int64 = arg
+            type_codes[i] = TypeCode.INT
         elif arg is None:
             values[i].v_handle = None
             type_codes[i] = TypeCode.NULL
@@ -91,6 +152,11 @@ def _make_mxnet_args(args, temp_args):
         elif isinstance(arg, type):
             values[i].v_str = c_str(onp.dtype(arg).name)
             type_codes[i] = TypeCode.STR
+        elif callable(arg):
+            arg = convert_to_mxnet_func(arg)
+            values[i].v_handle = arg.handle
+            type_codes[i] = TypeCode.PACKED_FUNC_HANDLE
+            temp_args.append(arg)
         else:
             raise TypeError("Don't know how to handle type %s" % type(arg))
     return values, type_codes, num_args
