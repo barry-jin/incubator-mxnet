@@ -18,12 +18,12 @@
 # coding: utf-8
 # pylint: disable=invalid-name, protected-access, too-many-arguments
 # pylint: disable=global-statement, unused-import
-"""CachedOp API."""
+"""NDArray Extension API."""
 
 import ctypes
 
 from ..base import _LIB
-from ..base import c_handle_array
+from ..base import c_handle_array, c_str_array
 from ..base import NDArrayHandle, CachedOpHandle, SymbolHandle
 from ..base import check_call
 from .. import _global_var
@@ -57,7 +57,7 @@ class CachedOp(object):
         #     ctypes.c_bool(thread_safe)))
         
         flags = {key: str(value) for key, value in flags}
-        self.handle = CachedOpHandle(_api_internal.create(
+        self.handle = CachedOpHandle(_api_internal.cached_op_create(
             sym.handle,
             flags,
             thread_safe
@@ -65,7 +65,7 @@ class CachedOp(object):
 
     def __del__(self):
         # check_call(_LIB.MXFreeCachedOp(self.handle))
-        _api_internal.free(self.handle)
+        _api_internal.cached_op_free(self.handle)
 
     def get_optimized_symbol(self):
         """Get an optimized version of the symbol from the cached op.
@@ -78,7 +78,7 @@ class CachedOp(object):
         from ..symbol import Symbol
         # sym_handle = SymbolHandle()
         # check_call(_LIB.MXCachedOpGetOptimizedSymbol(self.handle, ctypes.byref(sym_handle)))
-        sym_handle = SymbolHandle(_api_internal.get_optimized_symbol(self.handle))
+        sym_handle = SymbolHandle(_api_internal.cached_op_get_optimized_symbol(self.handle))
         ret = Symbol(sym_handle)
         return ret
     
@@ -97,10 +97,9 @@ class CachedOp(object):
             type_id = default_ctx.device_typeid if default_ctx else None
             device_id = default_ctx.device_id if default_ctx else None
             out_arg = out if out is not None and not isinstance(out, NDArrayBase) else (out, )
-            output_vars = _api_internal.invoke(
+            output_vars = _api_internal.cached_op_invoke(
                 self.handle,
                 len(args),
-                # ctypes.cast(c_handle_array(args), ctypes.c_void_p),
                 *args,
                 type_id,
                 device_id,
@@ -169,9 +168,9 @@ class CachedOp(object):
         cb_type = ctypes.CFUNCTYPE(None, ctypes.c_char_p, ctypes.c_char_p, NDArrayHandle, ctypes.c_void_p)
         if callback:
             self._monitor_callback = cb_type(_monitor_callback_wrapper(callback))
-        # check_call(_LIB.MXCachedOpRegisterOpHook(
-        #     self.handle,
-        #     self._monitor_callback,
-        #     ctypes.c_int(monitor_all)))
-        callback_ptr = ctypes.cast(self._monitor_callback, ctypes.c_void_p)
-        _api_internal.register_op_hook(self.handle, callback_ptr, monitor_all)
+        check_call(_LIB.MXCachedOpRegisterOpHook(
+            self.handle,
+            self._monitor_callback,
+            ctypes.c_int(monitor_all)))
+        # callback_ptr = ctypes.cast(self._monitor_callback, ctypes.c_void_p)
+        # _api_internal.cached_op_register_op_hook(self.handle, callback_ptr, monitor_all)

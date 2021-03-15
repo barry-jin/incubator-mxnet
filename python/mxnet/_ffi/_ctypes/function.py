@@ -110,7 +110,7 @@ def convert_to_mxnet_func(pyfunc):
 
     pyobj = ctypes.py_object(f)
     ctypes.pythonapi.Py_IncRef(pyobj)
-    if _LIB.TVMFuncCreateFromCFunc(f, pyobj, MXNET_FREE_PYOBJ, ctypes.byref(handle)) != 0:
+    if _LIB.MXFuncCreateFromCFunc(f, pyobj, MXNET_FREE_PYOBJ, ctypes.byref(handle)) != 0:
         raise get_last_ffi_error()
     return _make_packed_func(handle, False)
 

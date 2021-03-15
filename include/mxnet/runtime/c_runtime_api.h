@@ -52,6 +52,7 @@ typedef enum {
   kBytes = 9U,
   kPyArg = 10U,
   kNDArrayHandle = 11U,
+  kPackedFuncHandle = 12U,
   // Extension codes for other frameworks to integrate MXNet PackedFunc.
   // To make sure each framework's id do not conflict, use first and
   // last sections to mark ranges.
@@ -91,6 +92,8 @@ typedef struct {
 typedef void* MXNetFunctionHandle;
 /*! \brief Handle to Object. */
 typedef void* MXNetObjectHandle;
+/*! \brief Handle to hold return value. */
+typedef void* MXRetValueHandle;
 
 /*!
  * \brief Free the function when it is no longer needed.
@@ -125,6 +128,53 @@ MXNET_DLL int MXNetFuncCall(MXNetFunctionHandle func,
                             int num_args,
                             MXNetValue* ret_val,
                             int* ret_type_code);
+
+/*!
+ * \brief Set the return value of MXNetPackedCFunc.
+ *
+ *  This function is called by MXNetPackedCFunc to set the return value.
+ *  When this function is not called, the function returns null by default.
+ *
+ * \param ret The return value handle, pass by ret in MXNetPackedCFunc
+ * \param value The value to be returned.
+ * \param type_code The type of the value to be returned.
+ * \param num_ret Number of return values, for now only 1 is supported.
+ */
+MXNET_DLL int MXCFuncSetReturn(MXRetValueHandle ret, MXNetValue* value, int* type_code, int num_ret);
+
+/*!
+ * \brief C type of packed function.
+ *
+ * \param args The arguments
+ * \param type_codes The type codes of the arguments
+ * \param num_args Number of arguments.
+ * \param ret The return value handle.
+ * \param resource_handle The handle additional resouce handle from fron-end.
+ * \return 0 if success, -1 if failure happens, set error via MXAPISetLastError.
+ * \sa MXCFuncSetReturn
+ */
+typedef int (*MXNetPackedCFunc)(MXNetValue* args, int* type_codes, int num_args, MXRetValueHandle ret,
+                                void* resource_handle);
+
+/*!
+ * \brief C callback to free the resource handle in C packed function.
+ * \param resource_handle The handle additional resouce handle from fron-end.
+ */
+typedef void (*MXNetCFuncFinalizer)(void* resource_handle);
+
+/*!
+ * \brief Wrap a MXNetPackedCFunc to become a FunctionHandle.
+ *
+ * The resource_handle will be managed by TVM API, until the function is no longer used.
+ *
+ * \param func The packed C function.
+ * \param resource_handle The resource handle from front-end, can be NULL.
+ * \param fin The finalizer on resource handle when the FunctionHandle get freed, can be NULL
+ * \param out the result function handle.
+ * \return 0 when success, -1 when failure happens
+ */
+MXNET_DLL int MXFuncCreateFromCFunc(MXNetPackedCFunc func, void* resource_handle,
+                                     MXNetCFuncFinalizer fin, FunctionHandle* out);
 
 /*!
  * \brief Get a global function.

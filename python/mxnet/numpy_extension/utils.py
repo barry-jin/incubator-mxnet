@@ -27,6 +27,7 @@ from ..dlpack import ndarray_to_dlpack_for_read, ndarray_to_dlpack_for_write
 from ..dlpack import ndarray_from_dlpack, ndarray_from_numpy
 from ..numpy import ndarray, array
 from ..ndarray import NDArray
+from .. import _global_var
 
 __all__ = ['save', 'savez', 'load', 'to_dlpack_for_read', 'to_dlpack_for_write',
            'from_dlpack', 'from_numpy']
@@ -51,9 +52,13 @@ def save(file, arr):
     -----
     For a description of the ``.npy`` format, see :py:mod:`numpy.lib.format`.
     """
-    if not isinstance(arr, NDArray):
-        raise ValueError("data needs to either be a MXNet ndarray")
-    arr = [arr]
+    # if not isinstance(arr, NDArray):
+    #     raise ValueError("data needs to either be a MXNet ndarray")
+    if isinstance(arr, NDArray):
+        arr = [arr]
+    else:
+        if not isinstance(arr, list):
+            raise ValueError("data needs to either be a MXNet ndarray or list of MXNet ndarray")
     keys = None
     handles = c_handle_array(arr)
     check_call(_LIB.MXNDArraySave(c_str(file), mx_uint(len(handles)), handles, keys))
@@ -105,10 +110,21 @@ def savez(file, *args, **kwds):
     """
 
     if len(args):
-        for i, arg in enumerate(args):
-            name = 'arr_{}'.format(str(i))
-            assert name not in kwds, 'Naming conflict between arg {} and kwargs.'.format(str(i))
-            kwds[name] = arg
+        if isinstance(args[0], (list, tuple)):
+            assert len(args) == 1, 'Only accepts dict str->ndarray or list of ndarrays.'
+            for i, arg in enumerate(args[0]):
+                name = 'arr_{}'.format(str(i))
+                assert name not in kwds, 'Naming conflict between arg {} and kwargs.'.format(str(i))
+                kwds[name] = arg
+        elif isinstance(args[0], dict):
+            assert len(args) == 1, 'Only accepts dict str->ndarray or list of ndarrays.'
+            kwds = args[0]
+        else:
+            assert isinstance(args[0], NDArray), 'Only accepts dict str->ndarray or list of ndarrays.'
+            for i, arg in enumerate(args):
+                name = 'arr_{}'.format(str(i))
+                assert name not in kwds, 'Naming conflict between arg {} and kwargs.'.format(str(i))
+                kwds[name] = arg
 
     str_keys = kwds.keys()
     nd_vals = kwds.values()

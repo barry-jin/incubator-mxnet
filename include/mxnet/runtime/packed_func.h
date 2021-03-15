@@ -519,6 +519,11 @@ class MXNetArgValue : public MXNetPODValue_ {
       return std::string(value_.v_str);
     }
   }
+  operator PackedFunc() const {
+    if (type_code_ == kNull) return PackedFunc();
+    MXNET_CHECK_TYPE_CODE(type_code_, kPackedFuncHandle);
+    return *ptr<PackedFunc>();
+  }
   operator DLDataType() const {
     if (type_code_ == kStr) {
       return String2DLDataType(operator std::string());
@@ -608,6 +613,11 @@ class MXNetRetValue : public MXNetPODValue_ {
     }
     MXNET_CHECK_TYPE_CODE(type_code_, kMXNetType);
     return value_.v_type;
+  }
+  operator PackedFunc() const {
+    if (type_code_ == kNull) return PackedFunc();
+    MXNET_CHECK_TYPE_CODE(type_code_, kPackedFuncHandle);
+    return *ptr<PackedFunc>();
   }
   operator MXNetDataType() const {
     return MXNetDataType(operator DLDataType());
@@ -705,6 +715,14 @@ class MXNetRetValue : public MXNetPODValue_ {
     // value_.v_handle = reinterpret_cast<void*>(value->value);
     return *this;
   }
+  MXNetRetValue& operator=(PackedFunc f) {
+    if (f == nullptr) {
+      this->SwitchToPOD(kNull);
+    } else {
+      this->SwitchToClass(kPackedFuncHandle, f);
+    }
+    return *this;
+  }
   MXNetRetValue& operator=(const PythonArg& value) {
     this->SwitchToPOD(kPyArg);
     value_.v_int64 = value.offset();
@@ -735,6 +753,21 @@ class MXNetRetValue : public MXNetPODValue_ {
     *ret_type_code = type_code_;
     type_code_ = kNull;
   }
+  /*!
+   * \brief Construct a new MXNetRetValue by
+   *        moving from return value stored via C API.
+   * \param value the value.
+   * \param type_code The type code.
+   * \return The created MXNetRetValue.
+   */
+  static MXNetRetValue MoveFromCHost(MXNetValue value, int type_code) {
+    // Can move POD and everything under the object system.
+    CHECK(type_code <= kPackedFuncHandle);
+    MXNetRetValue ret;
+    ret.value_ = value;
+    ret.type_code_ = type_code;
+    return ret;
+  }
   /*! \return The value field, if the data is POD */
   const MXNetValue& value() const {
     CHECK(type_code_ != kObjectHandle &&
@@ -761,6 +794,10 @@ class MXNetRetValue : public MXNetPODValue_ {
       }
       case kObjectHandle: {
         *this = other.operator ObjectRef();
+        break;
+      }
+      case kPackedFuncHandle: {
+        SwitchToClass<PackedFunc>(kPackedFuncHandle, other);
         break;
       }
       default: {
@@ -810,7 +847,10 @@ class MXNetRetValue : public MXNetPODValue_ {
         static_cast<Object*>(value_.v_handle)->DecRef();
         break;
       }
-    }
+      case kPackedFuncHandle:
+        delete ptr<PackedFunc>();
+        break;  
+      }
     if (type_code_ > kExtBegin) {
       LOG(FATAL) << "Does not support ext type";
     }
@@ -872,6 +912,7 @@ inline const char* TypeCode2Str(int type_code) {
     case kNull: return "NULL";
     case kObjectHandle: return "ObjectCell";
     case kNDArrayHandle: return "NDArray";
+    case kPackedFuncHandle: return "FunctionHandle";
     default: LOG(FATAL) << "unknown type_code="
                         << static_cast<int>(type_code); return "";
   }

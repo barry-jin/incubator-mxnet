@@ -262,3 +262,37 @@ const char *MXGetLastError() {
 void MXAPISetLastError(const char* msg) {
   MXNetAPIRuntimeStore::Get()->last_error = msg;
 }
+
+int MXCFuncSetReturn(MXRetValueHandle ret, MXNetValue* value, int* type_code, int num_ret) {
+  API_BEGIN();
+  CHECK_EQ(num_ret, 1);
+  MXNetRetValue* rv = static_cast<MXNetRetValue*>(ret);
+  *rv = MXNetArgValue(value[0], type_code[0]);
+  API_END();
+}
+
+int MXFuncCreateFromCFunc(MXNetPackedCFunc func, void* resource_handle, MXNetCFuncFinalizer fin,
+                             FunctionHandle* out) {
+  API_BEGIN();
+  if (fin == nullptr) {
+    *out = new PackedFunc([func, resource_handle](MXNetArgs args, MXNetRetValue* rv) {
+      int ret = func(const_cast<MXNetValue*>(args.values), const_cast<int*>(args.type_codes),
+                     args.num_args, rv, resource_handle);
+      if (ret != 0) {
+        throw dmlc::Error(MXGetLastError() + ::dmlc::StackTrace());
+      }
+    });
+  } else {
+    // wrap it in a shared_ptr, with fin as deleter.
+    // so fin will be called when the lambda went out of scope.
+    std::shared_ptr<void> rpack(resource_handle, fin);
+    *out = new PackedFunc([func, rpack](MXNetArgs args, MXNetRetValue* rv) {
+      int ret = func(const_cast<MXNetValue*>(args.values), const_cast<int*>(args.type_codes),
+                     args.num_args, rv, rpack.get());
+      if (ret != 0) {
+        throw dmlc::Error(MXGetLastError() + ::dmlc::StackTrace());
+      }
+    });
+  }
+  API_END();
+}

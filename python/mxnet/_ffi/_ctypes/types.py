@@ -38,6 +38,8 @@ class TypeCode(object):
     BYTES = 9
     PYARG = 10
     NDARRAYHANDLE = 11
+    PACKED_FUNC_HANDLE = 12
+    PARAMS = 13
     EXT_BEGIN = 15
 
 
@@ -57,3 +59,24 @@ RETURN_SWITCH = {
     TypeCode.HANDLE: lambda x: x.v_handle,
     TypeCode.PYARG: lambda x, args: args[x.v_int64],
 }
+
+C_TO_PY_ARG_SWITCH = {
+    TypeCode.INT: lambda x: x.v_int64,
+    TypeCode.FLOAT: lambda x: x.v_float64,
+    TypeCode.NULL: lambda x: None,
+    TypeCode.STR: lambda x: py_str(x.v_str),
+    TypeCode.NDARRAYHANDLE: lambda x: _global_var._np_ndarray_cls(handle=NDArrayHandle(x.v_handle)),
+    TypeCode.HANDLE: lambda x: x.v_handle,
+    TypeCode.PYARG: lambda x, args: args[x.v_int64],    
+}
+
+MXNetPackedCFunc = ctypes.CFUNCTYPE(
+    ctypes.c_int,
+    ctypes.POINTER(MXNetValue),
+    ctypes.POINTER(ctypes.c_int),
+    ctypes.c_int,
+    ctypes.c_void_p,
+    ctypes.c_void_p,
+)
+
+MXNetCFuncFinalizer = ctypes.CFUNCTYPE(None, ctypes.c_void_p)

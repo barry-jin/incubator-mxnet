@@ -1357,9 +1357,9 @@ MXNET_DLL int MXInvokeCachedOp(CachedOpHandle handle,
 // /*!
 //  * \brief cached op set monitor callback
 //  */
-// MXNET_DLL int MXCachedOpRegisterOpHook(NDArrayHandle handle,
-//                                        CachedOpMonitorCallback callback,
-//                                        bool monitor_all);
+MXNET_DLL int MXCachedOpRegisterOpHook(NDArrayHandle handle,
+                                       CachedOpMonitorCallback callback,
+                                       bool monitor_all);
 
 /*!
  * \brief Get current status of deferred compute mode

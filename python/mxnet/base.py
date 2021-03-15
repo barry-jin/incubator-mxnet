@@ -197,6 +197,51 @@ def c2pyerror(err_msg):
     out_msg += "\n".join(message)
     return out_msg, err_type
 
+
+def py2cerror(err_msg):
+    """Translate python style error message to C style.
+
+    Parameters
+    ----------
+    err_msg : str
+        The error message.
+
+    Returns
+    -------
+    new_msg : str
+        Translated message.
+    """
+    arr = err_msg.split("\n")
+    if arr[-1] == "":
+        arr.pop()
+    trace_mode = False
+    stack_trace = []
+    message = []
+    for line in arr:
+        if trace_mode:
+            if line.startswith("  "):
+                stack_trace.append(line)
+            else:
+                trace_mode = False
+        if not trace_mode:
+            if line.find("Traceback") != -1:
+                trace_mode = True
+            else:
+                message.append(line)
+    # Remove the first error name if there are two of them.
+    # RuntimeError: MyErrorName: message => MyErrorName: message
+    head_arr = message[0].split(":", 3)
+    if len(head_arr) >= 3 and _valid_error_name(head_arr[1].strip()):
+        head_arr[1] = head_arr[1].strip()
+        message[0] = ":".join(head_arr[1:])
+    # reverse the stack trace.
+    out_msg = "\n".join(message)
+    if stack_trace:
+        out_msg += "\nStack trace:\n"
+        out_msg += "\n".join(reversed(stack_trace)) + "\n"
+    return out_msg
+
+
 @register_error
 class NotImplementedForSymbol(MXNetError):
     """Error: Not implemented for symbol"""

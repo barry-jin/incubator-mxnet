@@ -222,56 +222,85 @@ int MXInvokeCachedOp(CachedOpHandle handle,
                      int *num_outputs,
                      NDArrayHandle **outputs,
                      const int **out_stypes) {  // outputs storage types
+  NDArray **outarray = *reinterpret_cast<NDArray***>(outputs);
   MXAPIThreadLocalEntry<> *ret = MXAPIThreadLocalStore<>::Get();
 
   API_BEGIN();
-  CachedOpPtr op_shared = *static_cast<CachedOpPtr*>(handle);
-  // CachedOp* points to CachedOpThreadSafe object if CreateCachedOpEX
-  // was called with thread_safe=true
-  CachedOp* op = dynamic_cast<CachedOp*>(op_shared.get());
-  std::vector<NDArray*> ndinputs;
-  ndinputs.reserve(num_inputs);
-  for (int i = 0; i < num_inputs; ++i) {
-    ndinputs.push_back(reinterpret_cast<NDArray*>(inputs[i]));
-  }
-
-  std::vector<NDArray*> ndoutputs;
-  ndoutputs.reserve(op->num_outputs());
-  if (*outputs == nullptr) {
-    *num_outputs = op->num_outputs();
-    for (int i = 0; i < *num_outputs; ++i) ndoutputs.push_back(new NDArray());
-  } else {
-    CHECK_EQ(*num_outputs, op->num_outputs())
-        << "CachedOp expects " << op->num_outputs() << " outputs, but "
-        << *num_outputs << " was given.";
-    for (int i = 0; i < *num_outputs; ++i) {
-      ndoutputs.push_back(reinterpret_cast<NDArray*>((*outputs)[i]));
-    }
-  }
-  // construct default context
-  Context ctx = Context::Create(static_cast<Context::DeviceType>(default_dev_type),
-                                default_dev_id);
-  op->Forward(op_shared, ndinputs, ndoutputs, ctx);
-
-  if (*outputs == nullptr) {
+  *num_outputs = 1;
+  int num_visible_outputs = 1;
+  if (outarray == nullptr) {
     ret->ret_handles.clear();
-    ret->ret_handles.reserve(*num_outputs);
-    for (int i = 0; i < *num_outputs; ++i) {
-      ret->ret_handles.push_back(ndoutputs[i]);
+    for (int i = 0; i < num_visible_outputs; ++i) {
+      ret->ret_handles.push_back(reinterpret_cast<NDArrayHandle>(new NDArray()));
     }
     *outputs = dmlc::BeginPtr(ret->ret_handles);
+    ret->out_types.clear();
+    for (int i = 0; i < *num_outputs; ++i) {
+      int out_types = 0;
+      ret->out_types.emplace_back(out_types);
+    }
+    *out_stypes = dmlc::BeginPtr(ret->out_types);
   }
-
-  NDArray** out_array = reinterpret_cast<NDArray**>(*outputs);
-  ret->out_types.clear();
-  ret->out_types.reserve(*num_outputs);
-  for (int i = 0; i < *num_outputs; ++i) {
-    ret->out_types.emplace_back(out_array[i]->storage_type());
-  }
-  *out_stypes = dmlc::BeginPtr(ret->out_types);
-
   API_END();
 }
+// int MXInvokeCachedOp(CachedOpHandle handle,
+//                      int num_inputs,
+//                      NDArrayHandle *inputs,
+//                      int default_dev_type,
+//                      int default_dev_id,
+//                      int *num_outputs,
+//                      NDArrayHandle **outputs,
+//                      const int **out_stypes) {  // outputs storage types
+//   MXAPIThreadLocalEntry<> *ret = MXAPIThreadLocalStore<>::Get();
+
+//   API_BEGIN();
+//   CachedOpPtr op_shared = *static_cast<CachedOpPtr*>(handle);
+//   // CachedOp* points to CachedOpThreadSafe object if CreateCachedOpEX
+//   // was called with thread_safe=true
+//   CachedOp* op = dynamic_cast<CachedOp*>(op_shared.get());
+//   std::vector<NDArray*> ndinputs;
+//   ndinputs.reserve(num_inputs);
+//   for (int i = 0; i < num_inputs; ++i) {
+//     ndinputs.push_back(reinterpret_cast<NDArray*>(inputs[i]));
+//   }
+
+//   std::vector<NDArray*> ndoutputs;
+//   ndoutputs.reserve(op->num_outputs());
+//   if (*outputs == nullptr) {
+//     *num_outputs = op->num_outputs();
+//     for (int i = 0; i < *num_outputs; ++i) ndoutputs.push_back(new NDArray());
+//   } else {
+//     CHECK_EQ(*num_outputs, op->num_outputs())
+//         << "CachedOp expects " << op->num_outputs() << " outputs, but "
+//         << *num_outputs << " was given.";
+//     for (int i = 0; i < *num_outputs; ++i) {
+//       ndoutputs.push_back(reinterpret_cast<NDArray*>((*outputs)[i]));
+//     }
+//   }
+//   // construct default context
+//   Context ctx = Context::Create(static_cast<Context::DeviceType>(default_dev_type),
+//                                 default_dev_id);
+//   op->Forward(op_shared, ndinputs, ndoutputs, ctx);
+
+//   if (*outputs == nullptr) {
+//     ret->ret_handles.clear();
+//     ret->ret_handles.reserve(*num_outputs);
+//     for (int i = 0; i < *num_outputs; ++i) {
+//       ret->ret_handles.push_back(ndoutputs[i]);
+//     }
+//     *outputs = dmlc::BeginPtr(ret->ret_handles);
+//   }
+
+//   NDArray** out_array = reinterpret_cast<NDArray**>(*outputs);
+//   ret->out_types.clear();
+//   ret->out_types.reserve(*num_outputs);
+//   for (int i = 0; i < *num_outputs; ++i) {
+//     ret->out_types.emplace_back(out_array[i]->storage_type());
+//   }
+//   *out_stypes = dmlc::BeginPtr(ret->out_types);
+
+//   API_END();
+// }
 
 int MXAutogradIsTraining(bool* curr) {
   API_BEGIN();
@@ -412,25 +441,25 @@ int MXAutogradGetSymbol(NDArrayHandle handle, SymbolHandle *out) {
   API_END();
 }
 
-// int MXCachedOpRegisterOpHook(NDArrayHandle handle,
-//                              CachedOpMonitorCallback callback,
-//                              bool monitor_all) {
-//   API_BEGIN();
-//   CachedOpMonitorCallback callback_temp = nullptr;
-//   std::function<void(const char *, const char *, void*)> clbk;
-//   if (callback) {
-//     callback_temp = callback;
-//     clbk = [callback_temp](const char *name, const char *opr_name,
-//                            void *handle) {
-//       callback_temp(name, opr_name, handle);
-//     };
-//   } else {
-//       clbk = nullptr;
-//   }
-//   CachedOpPtr op = *static_cast<CachedOpPtr *>(handle);
-//   op->RegisterOpHook(clbk, monitor_all);
-//   API_END();
-// }
+int MXCachedOpRegisterOpHook(NDArrayHandle handle,
+                             CachedOpMonitorCallback callback,
+                             bool monitor_all) {
+  API_BEGIN();
+  CachedOpMonitorCallback callback_temp = nullptr;
+  std::function<void(const char *, const char *, void*)> clbk;
+  if (callback) {
+    callback_temp = callback;
+    clbk = [callback_temp](const char *name, const char *opr_name,
+                           void *handle) {
+      callback_temp(name, opr_name, handle);
+    };
+  } else {
+      clbk = nullptr;
+  }
+  CachedOpPtr op = *static_cast<CachedOpPtr *>(handle);
+  op->RegisterOpHook(clbk, monitor_all);
+  API_END();
+}
 
 int MXNDArrayIsDeferredCompute(int *curr) {
   API_BEGIN();
