@@ -27,27 +27,27 @@ from ..base import mx_uint, check_call, _LIB, py_str, _init_op_module, _Null, _i
 from ..util import use_np_shape  # pylint: disable=unused-import
 from .._ctypes import _api_internal  # pylint: disable=unused-import
 
-rest_ops_set = {'multibox_prior', 'rsubtract_scalar', 'random_flip_top_bottom', 'instance_norm', 'matrix_rank_none_tol',
-                'logical_or_scalar', 'rnn_param_concat', 'normalize', 'amp_multicast', 'pick', 'bitwise_xor_scalar',
-                'rpower_scalar', 'pinv_scalar_rcond', 'multibox_detection', 'smooth_l1', 'power_scalar', 'rldexp_scalar',
-                'multi_all_finite', 'sldwin_atten_context', 'powerd', 'slice_assign_scalar', 'insert_tensor', 'lcm_scalar',
-                'random_color_jitter', 'crop', 'rfmod_scalar', 'arange_like', 'sometrue', 'Custom', 'bitwise_or_scalar',
-                'ldexp_scalar', 'less_equal_scalar', 'where_rscalar', 'one_hot', 'minimum_scalar', 'all_finite',
-                'rtrue_divide_scalar', 'intgemm_prepare_weight', 'not_equal_scalar', 'activation', 'scatter_set_nd',
-                'logical_and_scalar', 'multibox_target', 'masked_softmax', 'sldwin_atten_score', 'equal_scalar', 'cvimresize',
-                'boolean_mask_assign_tensor', 'random_lighting', 'bitwise_and_scalar', 'true_divide_scalar', 'insert_scalar',
-                'embedding', 'greater_scalar', 'contrib_quantize', 'logical_xor_scalar', 'arctan2_scalar', 'constraint_check',
-                'random_randint', 'fmin_scalar', 'less_scalar', 'rnn', 'convolution', 'bipartite_matching', 'scalar_poisson',
-                'roi_pooling', 'random_resized_crop', 'fmax_scalar', 'masked_log_softmax', 'slice_assign', 'pooling',
-                'maximum_scalar', 'box_iou', 'rmod_scalar', 'tensordot_int_axes', 'contrib_calibrate_entropy', 'softmax',
-                'fully_connected', 'log_softmax', 'copysign_scalar', 'normal_n', 'random_hue', 'slice', 'topk', 'random_saturation',
-                'intgemm_fully_connected', 'cvimread', 'rcopysign_scalar', 'gcd_scalar', 'add_scalar', 'batch_norm', 'box_decode',
-                'modulated_deformable_convolution', 'categorical', 'bernoulli', 'multiply_scalar', 'leaky_relu', 'batch_dot',
-                'sldwin_atten_mask_like', 'fmod_scalar', 'greater_equal_scalar', 'random_brightness', 'mod_scalar', 'deconvolution',
-                'random_crop', 'cvimdecode', 'tensor_poisson', 'layer_norm', 'insert_slice', 'where_scalar2', 'ctc_loss',
-                'random_contrast', 'hypot_scalar', 'product', 'reshape_like', 'where_lscalar', 'uniform_n', 'boolean_mask_assign_scalar',
-                'subtract_scalar', 'repeats', 'contrib_quantize_v2', 'adjust_lighting', 'broadcast_like', 'sequence_mask', 'dropout',
-                'deformable_convolution', 'random_flip_left_right', 'box_nms', 'boolean_mask', 'rarctan2_scalar'}
+rest_ops_set = {'multibox_prior', 'random_flip_top_bottom', 'instance_norm', 'matrix_rank_none_tol',
+                'rnn_param_concat', 'normalize', 'amp_multicast', 'pick',
+                'multibox_detection', 'smooth_l1',
+                'multi_all_finite', 'sldwin_atten_context', 'powerd', 'slice_assign_scalar', 'insert_tensor',
+                'random_color_jitter', 'crop', 'arange_like', 'sometrue', 'Custom',
+                'one_hot', 'all_finite',
+                'intgemm_prepare_weight', 'activation', 'scatter_set_nd',
+                'multibox_target', 'masked_softmax', 'sldwin_atten_score', 'cvimresize',
+                'boolean_mask_assign_tensor', 'random_lighting',
+                'embedding', 'contrib_quantize', 'constraint_check',
+                'random_randint', 'rnn', 'convolution', 'bipartite_matching', 'scalar_poisson',
+                'roi_pooling', 'random_resized_crop', 'masked_log_softmax', 'slice_assign', 'pooling',
+                'box_iou', 'tensordot_int_axes', 'contrib_calibrate_entropy', 'softmax',
+                'fully_connected', 'log_softmax', 'normal_n', 'random_hue', 'slice', 'topk', 'random_saturation',
+                'intgemm_fully_connected', 'cvimread', 'batch_norm', 'box_decode',
+                'modulated_deformable_convolution', 'categorical', 'bernoulli', 'leaky_relu', 'batch_dot',
+                'sldwin_atten_mask_like', 'random_brightness', 'deconvolution',
+                'random_crop', 'cvimdecode', 'tensor_poisson', 'layer_norm', 'insert_slice', 'ctc_loss',
+                'random_contrast', 'product', 'reshape_like', 'uniform_n', 'boolean_mask_assign_scalar',
+                'repeats', 'contrib_quantize_v2', 'adjust_lighting', 'broadcast_like', 'sequence_mask', 'dropout',
+                'deformable_convolution', 'random_flip_left_right', 'box_nms', 'boolean_mask'}
 
 def _verify_all_np_ndarrays(op_name, func_name, args, out):
     """Verify if all the arrays are numpy ndarrays.
@@ -144,16 +144,16 @@ def _np_imperative_invoke(handle, ndargs, out):
         return list(output_vars)
 
 
-# def np_imperative_invoke_params(handle, ndargs, params, out):
-#     """PackedFunc based numpy operator invocation call"""
-#     keys, vals = params.keys(), [str(val) for val in params.values()]
-#     output_vars = _api_internal.invoke_with_params(handle, len(ndargs), *ndargs, *keys, *vals, out)
-#     if out is not None:
-#         return out
-#     if isinstance(output_vars, NDArrayBase):
-#         return output_vars
-#     else:
-#         return list(output_vars)
+def np_imperative_invoke_params(handle, ndargs, params, out):
+    """PackedFunc based numpy operator invocation call"""
+    keys, vals = params.keys(), [str(val) for val in params.values()]
+    output_vars = _api_internal.invoke_with_params(handle, len(ndargs), *ndargs, *vals, out)
+    if out is not None:
+        return out
+    if isinstance(output_vars, NDArrayBase):
+        return output_vars
+    else:
+        return list(output_vars)
 
 
 # pylint: disable=too-many-locals
@@ -271,20 +271,12 @@ def %s(%s):"""%(func_name, ', '.join(signature)))
         ndargs.append({name})""".format(name=name))
                 # kwargs
                 if not kwarg_names:
-    
-    #                 if dtype_name is not None:
-    #                     code.append("""
-    # if %s is not _Null and %s is not None:
-    #     kwargs['%s'] = _np.dtype(%s).name"""%(dtype_name, dtype_name, dtype_name, dtype_name))
-
                     code.append("""
     _verify_all_np_ndarrays("{op_name}", "{func_name}", ndargs, out)
             """.format(op_name=op_name, func_name=func_name))
                     if not signature_only:
                         code.append("""
     return _np_imperative_invoke(%d, ndargs, out)"""%(handle.value))
-    #                     code.append("""
-    # return _imperative_invoke(%d, ndargs, kwargs.keys(), kwargs.values(), out, True, False)"""%(handle.value))
                     else:
                         code.append("""
     return (0,)""")
@@ -310,8 +302,6 @@ def %s(%s):"""%(func_name, ', '.join(signature)))
                     else:
                         code.append("""
     return (0,)""")
-
-
     else:
         if arr_name:
             code.append("""
@@ -385,20 +375,16 @@ def %s(%s):"""%(func_name, ', '.join(signature)))
                                          for s in 'r"""{doc_str}"""'.format(doc_str=doc_str)
                                          .splitlines(True)])
     code.insert(1, doc_str_lines)
-    return ''.join(code), doc_str, is_np_op, kwarg_names, dtype_name
+    return ''.join(code), doc_str, is_np_op, kwarg_names, dtype_name, arr_name
 
 
 # pylint: disable=too-many-locals, invalid-name
 def _make_ndarray_function(handle, name, func_name):
     """Create a NDArray function from the FunctionHandle."""
-    code, doc_str, is_np_op, kwargs_names, dtype = _generate_ndarray_function_code(handle, name, func_name)
+    code, doc_str, is_np_op, kwargs_names, dtype, arr_name = _generate_ndarray_function_code(handle, name, func_name)
 
     local = {}
     exec(code, None, local)  # pylint: disable=exec-used
-    # if func_name in rest_ops_set:
-    #     print(func_name, kwargs_names, dtype)
-    if func_name == "product":
-        print(code)
     ndarray_function = local[func_name]
     ndarray_function.__name__ = func_name
     ndarray_function.__doc__ = doc_str

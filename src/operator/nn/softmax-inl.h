@@ -183,8 +183,8 @@ struct masked_softmax_where {
 };
 
 template<typename OP, bool masked_neg_inf, bool negate,
-         typename AType, typename DType, int ndim>
-inline void MaskedSoftmax(Stream<cpu> *s, DType *in, DType *out, bool *mask,
+         typename AType, typename DType, typename OType, int ndim>
+inline void MaskedSoftmax(Stream<cpu> *s, DType *in, OType *out, bool *mask,
                           Shape<ndim> data_shape, Shape<ndim> mask_shape,
                           int axis, const double temperature, bool normalize,
                           const OpContext& ctx) {
@@ -1179,6 +1179,21 @@ struct SoftmaxParam : public dmlc::Parameter<SoftmaxParam> {
            this->dtype == other.dtype &&
            this->use_length == other.use_length;
   }
+  void SetAttrDict(std::unordered_map<std::string, std::string>* dict) {
+    std::ostringstream axis_s, temperature_s, dtype_s, use_length_s;
+    axis_s << axis;
+    temperature_s << temperature;
+    dtype_s << dtype;
+    use_length_s << use_length;
+    (*dict)["axis"] = axis_s.str();
+    (*dict)["temperature"] = temperature_s.str();
+    if (dtype.has_value()) {
+      (*dict)["dtype"] = MXNetTypeWithBool2String(dtype.value());
+    } else {
+      (*dict)["dtype"] = dtype_s.str();
+    }
+    (*dict)["use_length"] = use_length_s.str();
+  }
 };
 
 struct MaskedSoftmaxParam : public dmlc::Parameter<MaskedSoftmaxParam> {
@@ -1191,9 +1206,31 @@ struct MaskedSoftmaxParam : public dmlc::Parameter<MaskedSoftmaxParam> {
     .describe("The axis along which to compute softmax.");
     DMLC_DECLARE_FIELD(temperature).set_default(dmlc::optional<double>())
     .describe("Temperature parameter in softmax");
+    DMLC_DECLARE_FIELD(dtype)
+    .add_enum("float16", mshadow::kFloat16)
+    .add_enum("float32", mshadow::kFloat32)
+    .add_enum("float64", mshadow::kFloat64)
+    .set_default(dmlc::optional<int>())
+    .describe("DType of the output in case this can't be inferred. "
+              "Defaults to the same as input's dtype if not defined (dtype=None).");
     DMLC_DECLARE_FIELD(normalize)
     .set_default(dmlc::optional<bool>(true))
     .describe("Whether to normalize input data x: x = x - max(x)");
+  }
+  void SetAttrDict(std::unordered_map<std::string, std::string>* dict) {
+    std::ostringstream axis_s, temperature_s, dtype_s, normalize_s;
+    axis_s << axis;
+    temperature_s << temperature;
+    dtype_s << dtype;
+    normalize_s << normalize;
+    (*dict)["axis"] = axis_s.str();
+    (*dict)["temperature"] = temperature_s.str();
+    if (dtype.has_value()) {
+      (*dict)["dtype"] = MXNetTypeWithBool2String(dtype.value());
+    } else {
+      (*dict)["dtype"] = dtype_s.str();
+    }
+    (*dict)["normalize"] = normalize_s.str();
   }
 };
 
@@ -1365,8 +1402,8 @@ static inline bool MaskedSoftmaxOpShape(const nnvm::NodeAttrs& attrs,
   if (!mxnet::ndim_is_known(data_shape) || !mxnet::ndim_is_known(mask_shape)) {
     return false;
   }
-  CHECK(data_shape.ndim() == mask_shape.ndim())
-      << "Number of dimensions in data and mask does not match";
+  // CHECK(data_shape.ndim() == mask_shape.ndim())
+  //     << "Number of dimensions in data and mask does not match";
   CHECK(data_shape.ndim() > 0)
       << "Empty tuple is not allowed";
 
@@ -1513,20 +1550,22 @@ void MaskedSoftmaxCompute(const nnvm::NodeAttrs& attrs,
   }
   MXNET_REAL_ACC_TYPE_SWITCH(inputs[0].type_flag_, DType, AType, {
     MXNET_NDIM_SWITCH(inputs[0].ndim(), ndim, {
-      bool* mask_ptr = inputs[1].dptr<bool>();
-      if (safe_acc) {
-        MaskedSoftmax<OP, masked_neg_inf, negate, AType>(
+      MSHADOW_REAL_TYPE_SWITCH(outputs[0].type_flag_, OType, {
+        bool* mask_ptr = inputs[1].dptr<bool>();
+        if (safe_acc) {
+          MaskedSoftmax<OP, masked_neg_inf, negate, AType>(
+            ctx.get_stream<xpu>(), inputs[0].dptr<DType>(),
+            outputs[0].dptr<OType>(), mask_ptr,
+            inputs[0].shape_.get<ndim>(), inputs[1].shape_.get<ndim>(),
+            axis, temperature, param.normalize.value(), ctx);
+        } else {
+          MaskedSoftmax<OP, masked_neg_inf, negate, DType>(
           ctx.get_stream<xpu>(), inputs[0].dptr<DType>(),
-          outputs[0].dptr<DType>(), mask_ptr,
+          outputs[0].dptr<OType>(), mask_ptr,
           inputs[0].shape_.get<ndim>(), inputs[1].shape_.get<ndim>(),
           axis, temperature, param.normalize.value(), ctx);
-      } else {
-        MaskedSoftmax<OP, masked_neg_inf, negate, DType>(
-          ctx.get_stream<xpu>(), inputs[0].dptr<DType>(),
-          outputs[0].dptr<DType>(), mask_ptr,
-          inputs[0].shape_.get<ndim>(), inputs[1].shape_.get<ndim>(),
-          axis, temperature, param.normalize.value(), ctx);
-      }
+        }
+      });
     });
   });
 }

@@ -620,7 +620,7 @@ class DataLoader(object):
                              "not be specified if batch_sampler is specified.")
 
         self._batch_sampler = batch_sampler
-        self._num_workers = num_workers if num_workers >= 0 else 0
+        self._num_workers = 0
         self._worker_pool = None
         self._prefetch = max(0, int(prefetch) if prefetch is not None else 2 * self._num_workers)
         if batchify_fn is None:

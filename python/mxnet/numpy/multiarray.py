@@ -500,7 +500,7 @@ class ndarray(NDArray):  # pylint: disable=invalid-name
         if type(idcs) == NDArray:  # pylint: disable=unidiomatic-typecheck
             idcs = idcs.as_np_ndarray()
         else:
-            idcs = _npi.stack(*[i if isinstance(i, self.__class__) else i.as_np_ndarray() for i in idcs])
+            idcs = _mx_nd_np.stack([i if isinstance(i, self.__class__) else i.as_np_ndarray() for i in idcs])
         sliced = _npi.gather_nd(self, idcs)
         # Reshape due to `None` entries in `key`.
         if new_axes:
@@ -517,7 +517,7 @@ class ndarray(NDArray):  # pylint: disable=invalid-name
         if type(idcs) == NDArray:  # pylint: disable=unidiomatic-typecheck
             idcs = idcs.as_np_ndarray()
         else:
-            idcs = _npi.stack(*[i if isinstance(i, self.__class__) else i.as_np_ndarray() for i in idcs])
+            idcs = _mx_nd_np.stack([i if isinstance(i, self.__class__) else i.as_np_ndarray() for i in idcs])
         vshape = get_oshape_of_gather_nd_op(self.shape, idcs.shape)
         value_nd = self._prepare_value_nd(value, bcast_shape=vshape, squeeze_axes=new_axes)
         self._scatter_set_nd(value_nd, idcs)
@@ -763,7 +763,7 @@ class ndarray(NDArray):  # pylint: disable=invalid-name
            all((isinstance(arr, NDArray) and _np.issubdtype(arr.dtype, _np.integer) and \
                 arr.ndim > 0) for arr in key):
             # Equivalent case in numpy/_symbol.py
-            return _npi.advanced_indexing_multiple(self, _npi.stack(*key))
+            return _npi.advanced_indexing_multiple(self, _mx_nd_np.stack(key))
         elif isinstance(key, tuple) and dc.is_deferred_compute():
             # Equivalent to isinstance(key, tuple) case in numpy/_symbol.py
             # Only enabled in deferred compute mode, as this codepath prevents
@@ -799,7 +799,7 @@ class ndarray(NDArray):  # pylint: disable=invalid-name
             if not unsupported:
                 new_shape += (-4,)
                 sliced = _npi.slice(self, begin, end, step)
-                return _npi.reshape(sliced, new_shape)
+                return reshape(sliced, new_shape)
 
         # Special handling for cases only supported in imperative mode
         if dc.is_deferred_compute():
@@ -1636,9 +1636,9 @@ class ndarray(NDArray):  # pylint: disable=invalid-name
         if len(args) == 0:
             raise TypeError('reshape() takes exactly 1 argument (0 given)')
         if len(args) == 1 and isinstance(args[0], tuple):
-            return _mx_np_op.reshape(self, newshape=args[0], order=order)
+            return _mx_nd_np.reshape(self, newshape=args[0], order=order)
         else:
-            return _mx_np_op.reshape(self, newshape=args, order=order)
+            return _mx_nd_np.reshape(self, newshape=args, order=order)
 
     def reshape_like(self, *args, **kwargs):
         """Convenience fluent method for :py:func:`reshape_like`.
@@ -5725,7 +5725,7 @@ def expand_dims(a, axis):
     >>> np.newaxis is None
     True
     """
-    return _npi.expand_dims(a, axis)
+    return _mx_nd_np.expand_dims(a, axis)
 
 
 @set_module('mxnet.numpy')
@@ -7621,7 +7621,7 @@ def mean(a, axis=None, dtype=None, out=None, keepdims=False):  # pylint: disable
     >>> np.mean(a, dtype=np.float64)
     array(0.55, dtype=float64)
     """
-    return _npi.mean(a, axis=axis, dtype=dtype, keepdims=keepdims, out=out)
+    return _mx_nd_np.mean(a, axis=axis, dtype=dtype, keepdims=keepdims, out=out)
 # pylint: enable=redefined-outer-name
 
 
@@ -11811,7 +11811,7 @@ def cumsum(a, axis=None, dtype=None, out=None):
     return _mx_nd_np.cumsum(a, axis=axis, dtype=dtype, out=out)
 
 @set_module('mxnet.numpy')
-def reshape(a, newshape, reverse, order='C'):
+def reshape(a, newshape, order='C'):
     """
     Gives a new shape to an array without changing its data.
     This function always returns a copy of the input array if
@@ -11872,7 +11872,7 @@ def reshape(a, newshape, reverse, order='C'):
            [3., 4.],
            [5., 6.]])
     """
-    return _mx_nd_np.reshape(a, newshape, reverse, order)
+    return _mx_nd_np.reshape(a, newshape, order)
 
 @set_module('mxnet.numpy')
 def moveaxis(a, source, destination):

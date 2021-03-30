@@ -73,6 +73,8 @@ def convert_to_node(value):
             vlist.append(item[0])
             vlist.append(convert_to_node(item[1]))
         return _api_internal._Map(*vlist)
+    elif value is None:
+        return None
     raise ValueError("don't know how to convert type %s to node" % type(value))
 
 

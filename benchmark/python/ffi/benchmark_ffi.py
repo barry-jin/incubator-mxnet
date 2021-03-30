@@ -213,7 +213,7 @@ def prepare_workloads():
 
 
 def benchmark_helper(f, *args, **kwargs):
-    number = 10000
+    number = 1
     return timeit.timeit(lambda: f(*args, **kwargs), number=number) / number
 
 

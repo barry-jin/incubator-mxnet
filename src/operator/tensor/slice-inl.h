@@ -50,6 +50,15 @@ struct SliceParam : public dmlc::Parameter<SliceParam> {
            this->end == other.end &&
            this->step == other.step;
   }
+  void SetAttrDict(std::unordered_map<std::string, std::string>* dict) {
+    std::ostringstream begin_s, end_s, step_s;
+    begin_s << begin;
+    end_s << end;
+    step_s << step;
+    (*dict)["begin"] = begin_s.str();
+    (*dict)["end"] = end_s.str();
+    (*dict)["step"] = step_s.str();
+  }
 };
 
 }  // namespace op

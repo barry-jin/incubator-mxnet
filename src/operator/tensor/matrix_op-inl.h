@@ -1294,6 +1294,17 @@ struct SliceAssignScalarParam : public dmlc::Parameter<SliceAssignScalarParam> {
     .set_default(mxnet::Tuple<dmlc::optional<index_t>>())
     .describe("step for the slice operation, supports negative values.");
   }
+  void SetAttrDict(std::unordered_map<std::string, std::string>* dict) {
+    std::ostringstream scalar_s, begin_s, end_s, step_s;
+    scalar_s << scalar;
+    begin_s << begin;
+    end_s << end;
+    step_s << step;
+    (*dict)["scalar"] = scalar_s.str();
+    (*dict)["begin"] = begin_s.str();
+    (*dict)["end"] = end_s.str();
+    (*dict)["step"] = step_s.str();
+  }
 };
 
 inline bool SliceAssignScalarOpShape(const nnvm::NodeAttrs& attrs,

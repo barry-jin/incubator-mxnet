@@ -399,7 +399,7 @@ class SoftmaxCrossEntropyLoss(Loss):
             log_softmax_fn = F.log_softmax
             pick_fn = F.pick
         if not self._from_logits:
-            pred = log_softmax_fn(pred, self._axis)
+            pred = log_softmax_fn(pred, axis=self._axis)
         if self._sparse_label:
             loss = -pick_fn(pred, label, axis=self._axis, keepdims=True)
         else:

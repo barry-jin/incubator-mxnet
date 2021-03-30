@@ -32,6 +32,7 @@ namespace op {
 DMLC_REGISTER_PARAMETER(NumpyBernoulliParam);
 
 NNVM_REGISTER_OP(_npi_bernoulli)
+.add_alias("_npi_bernoulli")
 .set_num_inputs(
   [](const nnvm::NodeAttrs& attrs) {
     const NumpyBernoulliParam& param = nnvm::get<NumpyBernoulliParam>(attrs.parsed);

@@ -48,10 +48,9 @@ env.seed(args.seed)
 class Policy(gluon.Block):
     def __init__(self, **kwargs):
         super(Policy, self).__init__(**kwargs)
-        with self.name_scope():
-            self.dense = nn.Dense(16, in_units=4, activation='relu')
-            self.action_pred = nn.Dense(2, in_units=16)
-            self.value_pred = nn.Dense(1, in_units=16)
+        self.dense = nn.Dense(16, in_units=4, activation='relu')
+        self.action_pred = nn.Dense(2, in_units=16)
+        self.value_pred = nn.Dense(1, in_units=16)
 
     def forward(self, x):
         x = self.dense(x)
