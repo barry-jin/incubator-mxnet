@@ -23,7 +23,8 @@ from ..util import set_module
 
 __all__ = ['softmax', 'log_softmax', 'masked_softmax', 'masked_log_softmax', 'activation',
            'batch_norm', 'fully_connected', 'pick', 'convolution', 'deconvolution', 'pooling',
-           'dropout', 'one_hot', 'rnn', 'embedding', 'topk', 'layer_norm', 'leaky_relu']
+           'dropout', 'one_hot', 'rnn', 'embedding', 'topk', 'layer_norm', 'leaky_relu', 'sequence_mask',
+           'batch_dot', 'broadcast_like', 'arange_like']
 
 def softmax(data, length=None, axis=-1, temperature=None, use_length=False, dtype=None):
     r"""Applies the softmax function.
@@ -203,7 +204,23 @@ def layer_norm(data=None, gamma=None, beta=None, axis=None, eps=None, output_mea
     return _mx_nd_npx.layer_norm(data=data, gamma=gamma, beta=beta, axis=axis, eps=eps,
                                  output_mean_var=output_mean_var)
 
-def leaky_relu(data=None, gamma=None, act_type=None, slope=None, lower_bound=None,
+def leaky_relu(data=None, gamma=None, act_type="leaky", slope=None, lower_bound=None,
                upper_bound=None, **kwargs):
     return _mx_nd_npx.leaky_relu(data=data, gamma=gamma, act_type=act_type, slope=slope,
                                  lower_bound=lower_bound, upper_bound=upper_bound)
+
+def sequence_mask(data, sequence_length=None, use_sequence_length=False, value=0.0, axis=0):
+    return _mx_nd_npx.sequence_mask(data=data, sequence_length=sequence_length,
+                                    use_sequence_length=use_sequence_length, value=value,
+                                    axis=axis)
+
+def batch_dot(a, b, transpose_a=False, transpose_b=False, forward_stype="default"):
+    return _mx_nd_npx.batch_dot(a=a, b=b, transpose_a=transpose_a,
+                                transpose_b=transpose_b, forward_stype=forward_stype)
+
+def broadcast_like(lhs, rhs, lhs_axes=None, rhs_axes=None):
+    return _mx_nd_npx.broadcast_like(lhs=lhs, rhs=rhs, lhs_axes=lhs_axes, rhs_axes=rhs_axes)
+
+def arange_like(data, start=0.0, step=1.0, repeat=1, ctx=None, axis=None):
+    return _mx_nd_npx.arange_like(data=data, start=start, step=step, repeat=repeat,
+                                  ctx=ctx, axis=axis)

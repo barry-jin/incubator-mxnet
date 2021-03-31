@@ -18,57 +18,66 @@
  */
 
 /*!
- * \file npx_sequence_mask_op.cc
- * \brief Implementation of the API of functions in src/operator/numpy_extension/npx_sequence_mask_op.cc
+ * \file npx_batch_dot_op.cc
+ * \brief Implementation of the API of functions in src/operator/numpy_extension/npx_batch_dot_op.cc
  */
 #include <mxnet/api_registry.h>
 #include <mxnet/runtime/packed_func.h>
 #include "../utils.h"
-#include "../../../operator/sequence_mask-inl.h"
+#include "../../../operator/tensor/dot-inl.h"
 
 namespace mxnet {
 
-MXNET_REGISTER_API("_npx.sequence_mask")
+inline int String2ForwardStype(const std::string& s) {
+  using namespace op;
+  if (s == "default") {
+    return kDefaultStorage;
+  } else if (s == "row_sparse") {
+    return kRowSparseStorage;
+  } else if (s == "csr") {
+    return kCSRStorage;
+  } else {
+    LOG(FATAL) << "unknown forward storage type " << s;
+  }
+  LOG(FATAL) << "should not reach here ";
+  return 0;
+}
+
+MXNET_REGISTER_API("_npx.batch_dot")
 .set_body([](runtime::MXNetArgs args, runtime::MXNetRetValue* ret) {
   using namespace runtime;
   nnvm::NodeAttrs attrs;
-  static const nnvm::Op* op = Op::Get("_npx_sequence_mask");
-  op::SequenceMaskParam param;
-  int args_size = args.size();
+  const nnvm::Op* op = Op::Get("_npx_batch_dot");
+  op::DotParam param;
   // inputs
-  int num_inputs = args_size - 3;
+  int num_inputs = 2;
   std::vector<NDArray*> inputs;
   inputs.reserve(num_inputs);
   for (int i = 0; i < num_inputs; ++i) {
     inputs.push_back(args[i].operator mxnet::NDArray*());
   }
-
-  // parse use_sequence_length
-  if (args[args_size - 3].type_code() == kNull) {
-    param.use_sequence_length = false;
+  // transpose_a
+  if (args[2].type_code() == kNull) {
+    param.transpose_a = false;
   } else {
-    param.use_sequence_length = args[args_size - 3].operator bool();
+    param.transpose_a = args[2].operator bool();
   }
-
-  // parse value
-  if (args[args_size - 2].type_code() == kNull) {
-    param.value = 0.0;
+  // transpose_b
+  if (args[3].type_code() == kNull) {
+    param.transpose_b = false;
   } else {
-    param.value = args[args_size - 2].operator double();
+    param.transpose_b = args[3].operator bool();
   }
-
-  // parse axis
-  if (args[args_size - 1].type_code() == kNull) {
-    param.axis = 0;
+  // forward_stype
+  if (args[4].type_code() == kNull) {
+    param.forward_stype = dmlc::nullopt;
   } else {
-    param.axis = args[args_size - 1].operator int();
+    param.forward_stype = String2ForwardStype(args[4].operator std::string());
   }
-
   attrs.parsed = param;
   attrs.op = op;
-  SetAttrDict<op::SequenceMaskParam>(&attrs);
-
-  int num_outputs = 0;
+  SetAttrDict<op::DotParam>(&attrs);
+  int num_outputs = 1;
   auto ndoutputs = Invoke(op, &attrs, num_inputs, inputs.data(), &num_outputs, nullptr);
   *ret = ndoutputs[0];
 });

@@ -63,6 +63,15 @@ struct SequenceMaskParam : public dmlc::Parameter<SequenceMaskParam> {
     DMLC_DECLARE_FIELD(axis).set_default(0).describe(
         "The sequence axis. Only values of 0 and 1 are currently supported.");
   }
+  void SetAttrDict(std::unordered_map<std::string, std::string>* dict) {
+    std::ostringstream use_sequence_length_s, value_s, axis_s;
+    use_sequence_length_s << use_sequence_length;
+    value_s << value;
+    axis_s << axis;
+    (*dict)["use_sequence_length"] = use_sequence_length_s.str();
+    (*dict)["value"] = value_s.str();
+    (*dict)["axis"] = axis_s.str();
+  }
 };
 
 template<typename DType, typename IType>

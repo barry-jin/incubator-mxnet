@@ -27,7 +27,8 @@ from ...util import set_module
 
 __all__ = ['softmax', 'log_softmax', 'masked_softmax', 'masked_log_softmax', 'activation',
            'batch_norm', 'fully_connected', 'pick', 'convolution', 'deconvolution', 'pooling',
-           'dropout', 'one_hot', 'rnn', 'embedding', 'topk', 'layer_norm', 'leaky_relu']
+           'dropout', 'one_hot', 'rnn', 'embedding', 'topk', 'layer_norm', 'leaky_relu', 'sequence_mask',
+           'batch_dot', 'broadcast_like', 'arange_like']
 
 
 
@@ -202,12 +203,34 @@ def layer_norm(data=None, gamma=None, beta=None, axis=None, eps=None, output_mea
         return out
     return list(out)
 
-def leaky_relu(data=None, gamma=None, act_type=None, slope=None, lower_bound=None,
+def leaky_relu(data=None, gamma=None, act_type="leaky", slope=None, lower_bound=None,
                upper_bound=None, **kwargs):
-    assert act_type is not None, "Missing activation function. Accepted activation functions are \
-                                  rrelu, leaky, prelu, elu, selu, gelu"
     if act_type == "prelu":
         assert gamma is not None, "If activation function is prelu, please provide input gamma"
-        return list(_api_internal.leaky_relu(data, gamma, act_type, slope, lower_bound, upper_bound))
+        out = _api_internal.leaky_relu(data, gamma, act_type, slope, lower_bound, upper_bound)
+        if isinstance(out, NDArrayBase):
+            return out
+        return list(out)
     else:
         return _api_internal.leaky_relu(data, act_type, slope, lower_bound, upper_bound)
+
+
+def sequence_mask(data, sequence_length=None, use_sequence_length=False, value=0.0, axis=0):
+    if use_sequence_length:
+        assert sequence_length is not None, \
+            "use_sequence_length flag is on, but no sequence_length provided"
+        return _api_internal.sequence_mask(data, sequence_length, use_sequence_length,
+                                           value, axis)
+    else:
+        return _api_internal.sequence_mask(data, False, value, axis)
+
+
+def batch_dot(a, b, transpose_a=False, transpose_b=False, forward_stype="default"):
+    return _api_internal.batch_dot(a, b, transpose_a, transpose_b, forward_stype)
+
+
+def broadcast_like(lhs, rhs, lhs_axes=None, rhs_axes=None):
+    return _api_internal.broadcast_like(lhs, rhs, lhs_axes, rhs_axes)
+
+def arange_like(data, start=0.0, step=1.0, repeat=1, ctx=None, axis=None):
+    return _api_internal.arange_like(data, start, step, repeat, ctx, axis)

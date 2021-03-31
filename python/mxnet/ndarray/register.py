@@ -384,6 +384,8 @@ def _make_ndarray_function(handle, name, func_name):
     code, doc_str, is_np_op, kwargs_names, dtype, arr_name = _generate_ndarray_function_code(handle, name, func_name)
 
     local = {}
+    if func_name == "arange_like":
+        print(code)
     exec(code, None, local)  # pylint: disable=exec-used
     ndarray_function = local[func_name]
     ndarray_function.__name__ = func_name

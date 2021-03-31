@@ -116,9 +116,6 @@ MXNET_REGISTER_API("_npx.rnn")
   } else {
     param.lstm_state_clip_nan = args[args_size - 1].operator bool();
   }
-  param.seq_length_ = 0;
-  param.batch_size_ = 0;
-  param.input_size_ = 0;
   attrs.parsed = param;
   attrs.op = op;
   SetAttrDict<op::RNNParam>(&attrs);

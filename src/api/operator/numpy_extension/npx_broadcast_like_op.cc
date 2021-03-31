@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
+ * 
  *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -18,59 +18,50 @@
  */
 
 /*!
- * \file npx_sequence_mask_op.cc
- * \brief Implementation of the API of functions in src/operator/numpy_extension/npx_sequence_mask_op.cc
+ * \file npx_broadcast_like_op.cc
+ * \brief Implementation of the API of functions in src/operator/numpy_extension/npx_broadcast_like_op.cc
  */
 #include <mxnet/api_registry.h>
 #include <mxnet/runtime/packed_func.h>
 #include "../utils.h"
-#include "../../../operator/sequence_mask-inl.h"
+#include "../../../operator/tensor/broadcast_reduce_op.h"
 
 namespace mxnet {
 
-MXNET_REGISTER_API("_npx.sequence_mask")
+MXNET_REGISTER_API("_npx.broadcast_like")
 .set_body([](runtime::MXNetArgs args, runtime::MXNetRetValue* ret) {
   using namespace runtime;
   nnvm::NodeAttrs attrs;
-  static const nnvm::Op* op = Op::Get("_npx_sequence_mask");
-  op::SequenceMaskParam param;
-  int args_size = args.size();
+  const nnvm::Op* op = Op::Get("_npx_broadcast_like");
+  op::BroadcastLikeParam param;
   // inputs
-  int num_inputs = args_size - 3;
+  int num_inputs = 2;
   std::vector<NDArray*> inputs;
   inputs.reserve(num_inputs);
   for (int i = 0; i < num_inputs; ++i) {
     inputs.push_back(args[i].operator mxnet::NDArray*());
   }
-
-  // parse use_sequence_length
-  if (args[args_size - 3].type_code() == kNull) {
-    param.use_sequence_length = false;
+  // lhs_axes
+  if (args[2].type_code() == kNull) {
+    param.lhs_axes = dmlc::optional<mxnet::TShape>();
   } else {
-    param.use_sequence_length = args[args_size - 3].operator bool();
+    param.lhs_axes = mxnet::TShape(args[2].operator ObjectRef());
+  }
+  // rhs_axes
+  if (args[2].type_code() == kNull) {
+    param.rhs_axes = dmlc::optional<mxnet::TShape>();
+  } else {
+    param.rhs_axes = mxnet::TShape(args[2].operator ObjectRef());
   }
 
-  // parse value
-  if (args[args_size - 2].type_code() == kNull) {
-    param.value = 0.0;
-  } else {
-    param.value = args[args_size - 2].operator double();
-  }
-
-  // parse axis
-  if (args[args_size - 1].type_code() == kNull) {
-    param.axis = 0;
-  } else {
-    param.axis = args[args_size - 1].operator int();
-  }
-
-  attrs.parsed = param;
   attrs.op = op;
-  SetAttrDict<op::SequenceMaskParam>(&attrs);
+  attrs.parsed = param;
+  SetAttrDict<op::BroadcastLikeParam>(&attrs);
 
+  // outputs
   int num_outputs = 0;
   auto ndoutputs = Invoke(op, &attrs, num_inputs, inputs.data(), &num_outputs, nullptr);
-  *ret = ndoutputs[0];
+  *ret = reinterpret_cast<mxnet::NDArray*>(ndoutputs[0]);
 });
 
 }  // namespace mxnet
