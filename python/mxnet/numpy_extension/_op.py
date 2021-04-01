@@ -115,13 +115,13 @@ def log_softmax(data, length=None, axis=-1, temperature=None, use_length=False, 
     return _mx_nd_npx.log_softmax(data, length, axis=axis, temperature=temperature,
                                   use_length=use_length, dtype=dtype)
 
-def masked_softmax(data, mask, axis=-1, temperature=1.0, dtype=None):
+def masked_softmax(data, mask, axis=-1, temperature=1.0, normalize=True):
     return _mx_nd_npx.masked_softmax(data, mask, axis=axis, temperature=temperature,
-                                     dtype=dtype)
+                                     normalize=normalize)
 
-def masked_log_softmax(data, mask, axis=-1, temperature=1.0, dtype=None):
+def masked_log_softmax(data, mask, axis=-1, temperature=1.0, normalize=True):
     return _mx_nd_npx.masked_log_softmax(data, mask, axis=axis, temperature=temperature,
-                                         dtype=dtype)
+                                         normalize=normalize)
 
 def activation(data, act_type='relu', name='fwd'):
     return _mx_nd_npx.activation(data, act_type=act_type)

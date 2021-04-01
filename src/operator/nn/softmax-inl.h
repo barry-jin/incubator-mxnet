@@ -1199,37 +1199,23 @@ struct SoftmaxParam : public dmlc::Parameter<SoftmaxParam> {
 struct MaskedSoftmaxParam : public dmlc::Parameter<MaskedSoftmaxParam> {
   int axis;
   dmlc::optional<double> temperature;
-  dmlc::optional<int> dtype;
   dmlc::optional<bool> normalize;
   DMLC_DECLARE_PARAMETER(MaskedSoftmaxParam) {
     DMLC_DECLARE_FIELD(axis).set_default(-1)
     .describe("The axis along which to compute softmax.");
     DMLC_DECLARE_FIELD(temperature).set_default(dmlc::optional<double>())
     .describe("Temperature parameter in softmax");
-    DMLC_DECLARE_FIELD(dtype)
-    .add_enum("float16", mshadow::kFloat16)
-    .add_enum("float32", mshadow::kFloat32)
-    .add_enum("float64", mshadow::kFloat64)
-    .set_default(dmlc::optional<int>())
-    .describe("DType of the output in case this can't be inferred. "
-              "Defaults to the same as input's dtype if not defined (dtype=None).");
     DMLC_DECLARE_FIELD(normalize)
     .set_default(dmlc::optional<bool>(true))
     .describe("Whether to normalize input data x: x = x - max(x)");
   }
   void SetAttrDict(std::unordered_map<std::string, std::string>* dict) {
-    std::ostringstream axis_s, temperature_s, dtype_s, normalize_s;
+    std::ostringstream axis_s, temperature_s, normalize_s;
     axis_s << axis;
     temperature_s << temperature;
-    dtype_s << dtype;
     normalize_s << normalize;
     (*dict)["axis"] = axis_s.str();
     (*dict)["temperature"] = temperature_s.str();
-    if (dtype.has_value()) {
-      (*dict)["dtype"] = MXNetTypeWithBool2String(dtype.value());
-    } else {
-      (*dict)["dtype"] = dtype_s.str();
-    }
     (*dict)["normalize"] = normalize_s.str();
   }
 };

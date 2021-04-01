@@ -52,28 +52,13 @@ def log_softmax(data, length=None, axis=-1, temperature=None, use_length=False, 
         assert length is None, "Length input is not used"
         return _api_internal.log_softmax(data, axis, temperature, False, dtype)
 
-def masked_softmax(data, mask, axis=-1, temperature=1.0, dtype=None):
-    if mask is not None:
-        neg = -1e18
-        if _np.dtype(dtype) == _np.float16:
-            neg = -1e4
-        data = np.where(mask, data, neg)
-        logits = (softmax(data, axis=axis) / temperature) * mask
-    else:
-        logits = softmax(data, axis=axis) / temperature
-    return logits
+def masked_softmax(data, mask, axis=-1, temperature=1.0, normalize=True):
+    assert data is not None and mask is not None, "Missing input data and mask"
+    return _api_internal.masked_softmax(data, mask, axis, temperature, normalize)
 
-def masked_log_softmax(data, mask, axis=-1, temperature=1.0, dtype=None):
-    if mask is not None:
-        neg = -1e18
-        inf = -_np.inf
-        if _np.dtype(dtype) == _np.float16:
-            neg = -1e4
-        data = np.where(mask, data, neg)
-        logits = np.where(mask, log_softmax(data, axis=axis) / temperature, inf)
-    else:
-        logits = log_softmax(data, axis=axis) / temperature
-    return logits
+def masked_log_softmax(data, mask, axis=-1, temperature=1.0, normalize=True):
+    assert data is not None and mask is not None, "Missing input data and mask"
+    return _api_internal.masked_log_softmax(data, mask, axis, temperature, normalize)
 
 def activation(data, act_type='relu', name='fwd'):
     return _api_internal.activation(data, act_type)

@@ -2002,21 +2002,51 @@ def np_masked_log_softmax(data, mask, axis=-1, temperature=1.0):
     return _np.log(np_masked_softmax(data, mask, axis, temperature)+1e-20) * mask
 
 @use_np
-def test_npx_masked_softmax():
+@pytest.mark.parametrize('hybridize', [True, False])
+@pytest.mark.parametrize('shape', [(3, 0, 4), (0, 0)])
+@pytest.mark.parametrize('temperature', [1.0, 2.0, 3.0])
+def test_npx_masked_softmax(hybridize, shape, temperature):
+    class TestMaskedSoftmax(HybridBlock):
+        def __init__(self, axis, temperature):
+            super(TestMaskedSoftmax, self).__init__()
+            self._axis = axis
+            self._temperature = temperature
+
+        def hybrid_forward(self, F, a, mask):
+            return F.npx.masked_softmax(a, mask, axis=self._axis, temperature=self._temperature)
+
+    class TestMaskedLogSoftmax(HybridBlock):
+        def __init__(self, axis, temperature):
+            super(TestMaskedLogSoftmax, self).__init__()
+            self._axis = axis
+            self._temperature = temperature
+
+        def hybrid_forward(self, F, a, mask):
+            return F.npx.masked_log_softmax(a, mask, axis=self._axis, temperature=self._temperature)
+
     #(operator, function) tuples
-    tested_ops = [(mx.npx.masked_softmax, np_masked_softmax),
-                  (mx.npx.masked_log_softmax, np_masked_log_softmax)]
+    tested_ops = [(TestMaskedSoftmax, np_masked_softmax),
+                  (TestMaskedLogSoftmax, np_masked_log_softmax)]
 
     # only testing 0-size shaped inputs here, other input cases have been tested in test_opeartor.py
     for SoftmaxOp, softmax_function in tested_ops:
-        for shape in [(3, 0, 4), (0, 0)]:
-            mx_a = np.random.uniform(size=shape)
-            mask = np.random.randint(0, 2, shape)
-            for axis in range(-len(shape), len(shape)):
-                mx_out = SoftmaxOp(mx_a, mask=mask, axis=axis)
-                np_out = softmax_function(mx_a.asnumpy(), mask, axis=axis)
-                assert_almost_equal(mx_out.asnumpy(), np_out, rtol=1e-3, atol=1e-5, equal_nan=True)
+        mx_a = np.random.uniform(size=shape)
+        mask = np.random.randint(0, 2, shape)
+        mx_a.attach_grad()
+        mask.attach_grad()
+        for axis in range(-len(shape), len(shape)):
+            test_softmax_op = SoftmaxOp(axis, temperature)
+            if hybridize:
+                test_softmax_op.hybridize()
 
+            with mx.autograd.record():
+                mx_out = test_softmax_op(mx_a, mask)
+
+            np_out = softmax_function(mx_a.asnumpy(), mask.asnumpy(), axis, temperature)
+            assert_almost_equal(mx_out.asnumpy(), np_out, rtol=1e-3, atol=1e-5, equal_nan=True)
+
+            mx_out.backward()
+            assert_almost_equal(mx_a.grad.asnumpy(), _np.zeros(shape), rtol=1e-3, atol=1e-5)
 
 @use_np
 def test_npi_boolean_assign():
@@ -10298,3 +10328,13 @@ def test_modulated_deformable_convolution(num_batch, num_channel_data, num_defor
         rtol, atol = 1.0, 1e-2
     else:
         rtol, atol = 0.05, 1e-3
+
+
+def test_broadcast_like_different_types():
+    x = mx.np.zeros((2, 1))
+    y = mx.np.ones((2, 2))
+
+    y = mx.np.array(y).astype('int32')
+    z = mx.npx.broadcast_like(x, y)
+    assert_almost_equal(z.asnumpy(), np.array([[0,0],[0,0]]))
+    assert x.dtype == z.dtype
