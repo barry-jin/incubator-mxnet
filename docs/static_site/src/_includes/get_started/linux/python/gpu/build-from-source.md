@@ -1,1 +1,1 @@
-Please follow the build from source instructions linked above.
+Please follow the (build from source)[https://mxnet.apache.org/versions/1.8.0/get_started/build_from_source] instructions.
