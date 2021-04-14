@@ -3,4 +3,4 @@ Category-X binaries in violation of Apache Software Foundation (ASF) policies.
 If you would like to help re-do the binary releases in an ASF-compliant manner,
 please reach out via one of the [developer communications
 channels](https://mxnet.apache.org/community/contribute#mxnet-dev-communications).
-Until then, please follow the build from source instructions linked below.
+Until then, please follow the (build from source)[https://mxnet.apache.org/versions/1.8.0/get_started/build_from_source] instructions.
