@@ -1094,6 +1094,7 @@ def docs_prepare() {
             utils.init_git()
 
             unstash 'jekyll-artifacts'
+            unstash 'c-artifacts'
             unstash 'python-artifacts'
 
             utils.docker_run('ubuntu_cpu_jekyll', 'build_docs', false)
@@ -1120,6 +1121,7 @@ def docs_full_website() {
             utils.init_git()
 
             unstash 'jekyll-artifacts'
+            unstash 'c-artifacts'
             unstash 'python-artifacts'
 
             utils.docker_run('ubuntu_cpu_jekyll', 'build_docs', false)
@@ -1142,6 +1144,7 @@ def docs_prepare_beta() {
             utils.init_git()
 
             unstash 'jekyll-artifacts'
+            unstash 'c-artifacts'
             unstash 'python-artifacts'
 
             utils.docker_run('ubuntu_cpu_jekyll', 'build_docs_beta', false)
