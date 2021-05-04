@@ -1159,9 +1159,11 @@ build_docs() {
     pushd docs/_build
     tar -xzf jekyll-artifacts.tgz
     python_doc_folder='html/api/python/docs'
+    api_folder='html/api'
 
     # Python has it's own landing page/site so we don't put it in /docs/api
     mkdir -p $python_doc_folder && tar -xzf python-artifacts.tgz --directory $python_doc_folder
+    mkdir -p $api_folder/cpp/docs/api && tar -xzf c-artifacts.tgz --directory $api_folder/cpp/docs/api
 
      # check if .htaccess file exists
     if [ ! -f "html/.htaccess" ]; then
