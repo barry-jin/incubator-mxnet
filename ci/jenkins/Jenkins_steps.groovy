@@ -1055,7 +1055,7 @@ def docs_c(lib_name) {
         ws('workspace/docs') {
           timeout(time: max_time, unit: 'MINUTES') {
             utils.unpack_and_init(lib_name, mx_lib, false)
-            utils.docker_run('ubuntu_cpu_c', 'build_c_docs', false)
+            utils.docker_run('ubuntu_cpu', 'build_c_docs', false)
             if (should_pack_website()) {
               utils.pack_lib('c-artifacts', 'docs/_build/c-artifacts.tgz', false)
             }
