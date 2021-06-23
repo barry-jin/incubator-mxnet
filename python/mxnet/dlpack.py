@@ -94,6 +94,10 @@ def ndarray_from_dlpack(array_cls):
     fn : dlpack -> array_cls
     """
     def from_dlpack(dlpack):
+        if hasattr(dlpack, "__dlpack__"):
+            dlpack = dlpack.__dlpack__()
+        assert type(dlpack).__module__ == "builtins" and type(dlpack).__name__ == "PyCapsule", \
+            "The input object should be either DLPack Capsule or object with __dlpack__"
         handle = NDArrayHandle()
         dlpack = ctypes.py_object(dlpack)
         assert ctypes.pythonapi.PyCapsule_IsValid(dlpack, _c_str_dltensor), ValueError(

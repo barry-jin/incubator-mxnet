@@ -23,10 +23,12 @@ import logging
 import numpy as np
 
 from ....base import string_types
+from ....util import reset_np
 from .... import symbol
 from .export_onnx import MXNetGraph
 from ._export_helper import load_module
 
+reset_np()
 
 def export_model(sym, params, input_shape, input_type=np.float32,
                  onnx_file_path='model.onnx', verbose=False, opset_version=None):

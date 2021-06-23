@@ -187,12 +187,12 @@ inline void SGDOptimizer::Update(int index, NDArray weight, NDArray grad) {
   if (states_[index] == nullptr) {
     MXImperativeInvoke(update_handle_, 2, inputs,
         &num_outputs, &outputs,
-        keys.size(), keys.data(), values.data());
+        keys.size(), keys.data(), values.data(), nullptr);
   } else {
     inputs[2] = states_[index]->GetHandle();
     MXImperativeInvoke(mom_update_handle_, 3, inputs,
         &num_outputs, &outputs,
-        keys.size(), keys.data(), values.data());
+        keys.size(), keys.data(), values.data(), nullptr);
   }
 }
 
@@ -246,12 +246,12 @@ inline void SignumOptimizer::Update(int index, NDArray weight, NDArray grad) {
   if (states_[index] == nullptr) {
     MXImperativeInvoke(update_handle_, 2, inputs,
         &num_outputs, &outputs,
-        keys.size(), keys.data(), values.data());
+        keys.size(), keys.data(), values.data(), nullptr);
   } else {
     inputs[2] = states_[index]->GetHandle();
     MXImperativeInvoke(mom_update_handle_, 3, inputs,
         &num_outputs, &outputs,
-        keys.size(), keys.data(), values.data());
+        keys.size(), keys.data(), values.data(), nullptr);
   }
 }
 
@@ -318,7 +318,7 @@ inline void RMSPropOptimizer::Update(int index, NDArray weight, NDArray grad) {
 
   MXImperativeInvoke(alex_update_handle_, 5, inputs,
       &num_outputs, &outputs,
-      keys.size(), keys.data(), values.data());
+      keys.size(), keys.data(), values.data(), nullptr);
 }
 
 inline void RMSPropOptimizer::CreateState_(int index, NDArray weight) {
@@ -384,7 +384,7 @@ inline void AdamOptimizer::Update(int index, NDArray weight, NDArray grad) {
 
   MXImperativeInvoke(update_handle_, 4, inputs,
     &num_outputs, &outputs,
-    keys.size(), keys.data(), values.data());
+    keys.size(), keys.data(), values.data(), nullptr);
 }
 
 inline void AdamOptimizer::CreateState_(int index, NDArray weight) {

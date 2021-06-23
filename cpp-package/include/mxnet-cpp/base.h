@@ -29,6 +29,7 @@
 
 #include <cstdlib>
 #include "mxnet/c_api.h"
+#include "mxnet/runtime/c_runtime_api.h"
 #include "nnvm/c_api.h"
 
 namespace mxnet {

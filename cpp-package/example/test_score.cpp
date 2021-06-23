@@ -83,8 +83,8 @@ int main(int argc, char** argv) {
   TRY
   auto net = mlp(layers);
 
-  Context ctx = Context::gpu();  // Use GPU for training
-#if MXNET_USE_CPU
+  Context ctx = Context::cpu();  // Use GPU for training
+#if !USE_CUDA
   ctx = Context::cpu();
 #endif
 

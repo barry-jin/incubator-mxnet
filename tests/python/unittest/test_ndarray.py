@@ -1838,7 +1838,7 @@ def test_ndarray_is_finite():
     data[0][1] = -np.inf
     data[1][0] = np.nan
     data[1][1] = 5
-    output = mx.nd.contrib.isfinite(data)
+    output = mx.nd.contrib.isfinite(data.as_nd_ndarray())
     expected_output = np.isfinite(data.asnumpy())
     np.testing.assert_equal(output.asnumpy(), expected_output.astype(int))
     # astype since numpy functions default return type is boolean array instead of int

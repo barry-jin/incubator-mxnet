@@ -16,7 +16,7 @@
 # under the License.
 
 if [ ! -f "./mnist.zip" ]; then
-  wget http://webdocs.cs.ualberta.ca/~bx3/data/mnist.zip
+  wget https://repo.mxnet.io/gluon/dataset/mnist/
   unzip -u mnist.zip
 fi
 make lenet_with_mxdataiter

@@ -39,7 +39,7 @@ The makefile will also download the necessary data files and store in a data fol
 
 ## Examples demonstrating training workflow
 
-This directory contains following examples. In order to run the examples, ensure that the path to the MXNet shared library is added to the OS specific environment variable viz. **LD\_LIBRARY\_PATH** for Linux, Mac and Ubuntu OS and **PATH** for Windows OS. For example `export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/home/ubuntu/incubator-mxnet/lib` on ubuntu using gpu.
+This directory contains following examples. In order to run the examples, ensure that the path to the MXNet shared library is added to the OS specific environment variable viz. **LD\_LIBRARY\_PATH** for Linux, Mac and Ubuntu OS and **PATH** for Windows OS. For example `export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/home/ubuntu/incubator-mxnet/build` on ubuntu using gpu.
 
 ### [alexnet.cpp](<https://github.com/apache/incubator-mxnet/blob/master/cpp-package/example/alexnet.cpp>)
 

@@ -16,11 +16,11 @@
 # under the License.
 
 set -e # exit on the first error
-cd $(dirname $(readlink -f $0))/../example
+cd $(dirname $(greadlink -f $0))/../example
 echo $PWD
-export LD_LIBRARY_PATH=$(readlink -f ../../lib):$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=$(greadlink -f ../../build):$LD_LIBRARY_PATH
 echo $LD_LIBRARY_PATH
-ls -l ../../lib/
+ls -l ../../build/
 
 ./get_data.sh
 
@@ -30,17 +30,29 @@ cp ../../build/cpp-package/example/lenet .
 cp ../../build/cpp-package/example/alexnet .
 ./alexnet 1
 
+# not converge
+
 cp ../../build/cpp-package/example/lenet_with_mxdataiter .
 ./lenet_with_mxdataiter 1
 
 cp ../../build/cpp-package/example/resnet .
 ./resnet 1
 
+# not converge
+
 cp ../../build/cpp-package/example/inception_bn .
 ./inception_bn 1
 
+# [20:14:28] /work/mxnet/cpp-package/example/inception_bn.cpp:259: With Error: MXNetError: Check failed: inputs.size() == num_inputs() (280 vs. 418) : 
+# Stack trace:
+#   File "/work/mxnet/src/imperative/cached_op.cc", line 783
+
 cp ../../build/cpp-package/example/mlp .
 ./mlp 150
+
+# [20:15:25] /work/mxnet/cpp-package/example/mlp.cpp:180: With Error: MXNetError: Check failed: !is_none(): 
+# Stack trace:
+#   File "/work/mxnet/include/mxnet/ndarray.h", line 325
 
 cp ../../build/cpp-package/example/mlp_cpu .
 ./mlp_cpu
@@ -48,11 +60,13 @@ cp ../../build/cpp-package/example/mlp_cpu .
 cp ../../build/cpp-package/example/mlp_gpu .
 ./mlp_gpu
 
-cp ../../build/cpp-package/example/test_optimizer .
-./test_optimizer
+# cp ../../build/cpp-package/example/test_optimizer .
+# ./test_optimizer
+# no test
 
-cp ../../build/cpp-package/example/test_kvstore .
-./test_kvstore
+# cp ../../build/cpp-package/example/test_kvstore .
+# ./test_kvstore
+# no test
 
 cp ../../build/cpp-package/example/test_score .
 ./test_score 0.93

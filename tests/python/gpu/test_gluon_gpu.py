@@ -35,7 +35,7 @@ from test_loss import *
 from test_numpy_loss import *
 from test_gluon_rnn import *
 
-set_default_context(mx.gpu(0))
+# set_default_context(mx.gpu(0))
 
 
 def check_rnn_layer(layer):
@@ -323,16 +323,16 @@ def test_gluon_ctc_consistency():
 
 def test_global_norm_clip_multi_device():
     for check_isfinite in [True, False]:
-        x1 = mx.nd.ones((3, 3), ctx=mx.gpu(0))
-        x2 = mx.nd.ones((4, 4), ctx=mx.cpu(0))
-        x3 = mx.nd.ones((7, 4), ctx=mx.gpu(0))
-        x4 = mx.nd.ones((7, 4), ctx=mx.cpu(0))
+        x1 = mx.np.ones((3, 3), ctx=mx.cpu(0))
+        x2 = mx.np.ones((4, 4), ctx=mx.cpu(0))
+        x3 = mx.np.ones((7, 4), ctx=mx.cpu(0))
+        x4 = mx.np.ones((7, 4), ctx=mx.cpu(0))
         norm = gluon.utils.clip_global_norm(
             [x1, x2, x3, x4], 1.0, check_isfinite=check_isfinite)
         if check_isfinite:
             assert norm == 9.0
         else:
-            assert norm.asscalar() == 9.0
+            assert norm.item() == 9.0
         assert_almost_equal(x1, np.ones((3, 3)) / 9)
         assert_almost_equal(x2, np.ones((4, 4)) / 9)
         assert_almost_equal(x3, np.ones((7, 4)) / 9)
@@ -424,14 +424,14 @@ def test_symbol_block_fp16(tmpdir):
     # 1. Load a resnet model, cast it to fp16 and export
     tmp = str(tmpdir)
     tmpfile = os.path.join(tmp, 'resnet34_fp16')
-    ctx = mx.gpu(0)
+    ctx = mx.cpu(0)
 
     net_fp32 = mx.gluon.model_zoo.vision.resnet34_v2(
         pretrained=True, ctx=ctx, root=tmp)
     net_fp32.cast('float16')
     net_fp32.hybridize()
-    data = mx.nd.zeros((1, 3, 224, 224), dtype='float16', ctx=ctx)
-    net_fp32.forward(data)
+    data = mx.np.zeros((1, 3, 224, 224), dtype='float16', ctx=ctx)
+    net_fp32(data)
     symbol_file, param_file = net_fp32.export(tmpfile, 0)
 
     # 2. Load the saved model and verify if all the params are loaded correctly.

@@ -315,20 +315,21 @@ def test_fusion_different_dimensions():
     assert np.all(out.asnumpy() == np.ones((10,10)))
     assert out.shape == (10,10,1)
 
+@mx.util.use_np
 def test_input_reorder():
     class Block(gluon.HybridBlock):
         def __init__(self, **kwargs):
             super(Block, self).__init__(**kwargs)
 
-        def hybrid_forward(self, F, x, y, z):
+        def forward(self, x, y, z):
             s = x * 2
             s2 = s + z
-            s = F.broadcast_add(s, y * y)
-            return F.dot(s, s2)
+            s = mx.np.add(s, y * y)
+            return mx.np.dot(s, s2)
 
     for static_alloc in (False, True):
         arg_shapes = [(10, 10), (10, 1), (10, 10)]
-        arg_data = [mx.random.uniform(shape=s) for s in arg_shapes]
+        arg_data = [mx.np.random.uniform(size=s) for s in arg_shapes]
 
         arrays = {}
         for use_fusion in ('0', '1'):

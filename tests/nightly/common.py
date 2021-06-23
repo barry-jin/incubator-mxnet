@@ -75,7 +75,7 @@ def with_seed(seed=None):
                     log_level = logging.DEBUG
                 post_test_state = np.random.get_state()
                 np.random.seed(this_test_seed)
-                mx.random.seed(this_test_seed)
+                mx.npx.random.seed(this_test_seed)
                 random.seed(this_test_seed)
                 # 'pytest --logging-level=DEBUG' shows this msg even with an ensuing core dump.
                 test_count_msg = '{} of {}: '.format(i+1,test_count) if test_count > 1 else ''
@@ -93,7 +93,7 @@ def with_seed(seed=None):
                     raise
                 finally:
                     # Provide test-isolation for any test having this decorator
-                    mx.nd.waitall()
+                    mx.npx.waitall()
                     np.random.set_state(post_test_state)
         return test_new
     return test_helper

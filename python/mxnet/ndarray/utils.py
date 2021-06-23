@@ -29,10 +29,13 @@ from .sparse import zeros as _zeros_sparse_ndarray
 from .sparse import empty as _empty_sparse_ndarray
 from .sparse import array as _sparse_array
 from .sparse import _ndarray_cls
+from ..util import reset_np
 try:
     import scipy.sparse as spsp
 except ImportError:
     spsp = None
+
+reset_np()
 
 __all__ = ['zeros', 'empty', 'array', 'load', 'load_frombuffer', 'save']
 

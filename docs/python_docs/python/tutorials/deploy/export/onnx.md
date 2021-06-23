@@ -40,6 +40,7 @@ import numpy as np
 from mxnet.contrib import onnx as onnx_mxnet
 import logging
 logging.basicConfig(level=logging.INFO)
+mx.npx.reset_np()
 ```
 
 ## Downloading a model from the MXNet model zoo

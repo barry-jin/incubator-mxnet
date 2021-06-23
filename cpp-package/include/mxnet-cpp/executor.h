@@ -43,7 +43,6 @@ class Optimizer;
 * \brief Executor interface
 */
 class Executor {
-  friend class Monitor;
  public:
   Executor(const Symbol &symbol, Context context,
            const std::vector<NDArray> &arg_arrays,
@@ -53,19 +52,43 @@ class Executor {
            const std::map<std::string, Context> &group_to_ctx =
                std::map<std::string, Context>(),
            Executor *shared_exec = nullptr);
-  explicit Executor(const ExecutorHandle &h) { handle_ = h; }
+  explicit Executor(const CachedOpHandle &h) { handle_ = h; }
   /*!
   * \brief Perform a Forward operation of Operator
   *  After this operation, user can get the result by using function head.
   */
   void Forward(bool is_train) {
-    MXExecutorForward(handle_, is_train ? 1 : 0);
-    mx_uint out_size;
-    NDArrayHandle *out_array;
-    CHECK_EQ(MXExecutorOutputs(handle_, &out_size, &out_array), 0);
-    for (mx_uint i = 0; i < out_size; ++i) {
-      outputs[i] = NDArray(out_array[i]);
+    std::vector<NDArrayHandle> arg_handles;
+    for (const auto &array : combined_arrays) {
+      arg_handles.push_back(array.GetHandle());
     }
+    int prev_is_record = 0;
+    int prev_train_mode = 0;
+    CHECK_EQ(MXAutogradSetIsRecording(1, &prev_is_record), 0);
+    if (is_train == true) {
+      CHECK_EQ(MXAutogradSetIsTraining(1, &prev_train_mode), 0);
+    }
+    std::vector<NDArrayHandle> output_handles;
+    std::transform(outputs.begin(), outputs.end(),
+        std::back_inserter(output_handles), [](NDArray& a) {
+          return a.GetHandle();
+        });
+    int out_size = 0;
+    NDArrayHandle *out_array = nullptr;
+    CHECK_EQ(MXInvokeCachedOp(handle_, arg_handles.size(), arg_handles.data(),
+                              device_type, device_id, &out_size, &out_array, nullptr),
+             0);
+    outputs.clear();
+    outputs.reserve(out_size);
+    for (mx_uint i = 0; i < out_size; ++i) {
+      outputs.push_back(NDArray(out_array[i]));
+    }
+    int cur_train_mode = prev_train_mode;
+    int cur_is_record = prev_is_record;
+    if (is_train == true) {
+      CHECK_EQ(MXAutogradSetIsTraining(cur_train_mode, &prev_train_mode), 0);
+    }
+    CHECK_EQ(MXAutogradSetIsRecording(cur_is_record, &prev_is_record), 0);
   }
   /*!
   * \brief Perform a Backward operation of the Operator.
@@ -79,31 +102,51 @@ class Executor {
   */
   void Backward(const std::vector<NDArray> &head_grads =
                     std::vector<NDArray>()) {
-    std::vector<NDArrayHandle> head_grads_;
-    for (auto d : head_grads) {
-      head_grads_.push_back(d.GetHandle());
-    }
-    if (head_grads_.size() > 0) {
-      MXExecutorBackward(handle_, head_grads_.size(), head_grads_.data());
-    } else {
-      MXExecutorBackward(handle_, 0, nullptr);
+    if (require_grad == true) {
+      if (outputs.size() == 0) {
+        Forward(false);
+      }
+      std::vector<NDArrayHandle> out_handles;
+      for (const auto &array : outputs) {
+        out_handles.push_back(array.GetHandle());
+      }
+                          
+      std::vector<NDArrayHandle> head_grads_;
+      for (auto d : head_grads) {
+        head_grads_.push_back(d.GetHandle());
+      }
+      if (head_grads_.size() > 0) {
+        CHECK_EQ(MXAutogradBackwardEx(out_handles.size(), out_handles.data(),
+                                      head_grads_.data(), 0, nullptr, 0, 0, 1,
+                                      nullptr, nullptr), 0);
+      } else {
+        CHECK_EQ(MXAutogradBackwardEx(out_handles.size(), out_handles.data(),
+                                      nullptr, 0, nullptr, 0, 0, 1,
+                                      nullptr, nullptr), 0);
+      }
+      grad_arrays.clear();
+      grad_arrays.reserve(arg_arrays.size());
+      for (const auto &array : arg_arrays) {
+        NDArrayHandle grad;
+        CHECK_EQ(MXNDArrayGetGrad(array.GetHandle(), &grad),0);
+        grad_arrays.push_back(NDArray(grad));
+      }
     }
   }
   // TODO(zhangchen-qinyinghua)
   // To implement reshape function
   void Reshape();
   /*!
-  * \brief update the arguments with given learning rate and optimizer
-  * \return the SymbolHandle
-  */
-  std::string DebugStr();
-  /*!
   * \brief destructor, free the handle
   */
-  ~Executor() { MXExecutorFree(handle_); }
+  ~Executor() { MXFreeCachedOp(handle_); }
   std::vector<NDArray> arg_arrays;
   std::vector<NDArray> grad_arrays;
   std::vector<NDArray> aux_arrays;
+  std::vector<NDArray> combined_arrays;
+  int device_type;
+  int device_id;
+  bool require_grad;
   /*!
   * \brief arrays store the outputs of forward
   */
@@ -121,7 +164,7 @@ class Executor {
  private:
   Executor(const Executor &e);
   Executor &operator=(const Executor &e);
-  ExecutorHandle handle_;
+  CachedOpHandle handle_;
   Symbol symbol_;
   std::map<std::string, NDArray> GetDict(const std::vector<std::string> &names,
                                          const std::vector<NDArray> &arrays) {

@@ -286,6 +286,28 @@ def _load_lib():
     lib.MXGetLastError.restype = ctypes.c_char_p
     return lib
 
+def _load_lib():
+    """Load library by searching possible path."""
+    lib_path = libinfo.find_lib_path()
+    try:
+        lib = ctypes.CDLL(lib_path[0], ctypes.RTLD_LOCAL)
+        # DMatrix functions
+        lib.MXGetLastError.restype = ctypes.c_char_p
+    except OSError as e:
+        if "libcudnn" in e.args[0]:
+            e.args = (e.args[0]+'\nNotes: Starting from version 1.8.0, cuDNN and NCCL should be installed by users in advance.\
+                      \nPlease follow the instructions in https://docs.nvidia.com/deeplearning/cudnn/install-guide/index.html to install cuDNN.',)
+            raise OSError(e) from None
+        elif "libnccl" in e.args[0]:
+            e.args = (e.args[0]+'\nNotes: Starting from version 1.8.0, cuDNN and NCCL should be installed by users in advance.\
+                      \nPlease follow the instructions in https://docs.nvidia.com/deeplearning/nccl/install-guide/index.html to install NCCL.',)
+            raise OSError(e) from None
+        else:
+            raise
+    else:
+        return lib
+
+
 
 # version number
 __version__ = libinfo.__version__
@@ -800,7 +822,7 @@ _NP_EXT_OP_IMPLEMENTED_SET = {'_npx_softmax', '_npx_log_softmax', '_npx_masked_s
                               '_npx_deconvolution', '_npx_pooling', '_npx_dropout', 
                               '_npx_one_hot', '_npx_rnn', '_npx_embedding', '_npx_topk',
                               '_npx_layer_norm', '_npx_leaky_relu', '_npx_batch_dot', '_npx_broadcast_like',
-                              '_npx_arange_like'}
+                              '_npx_arange_like', '_npx_group_norm', '_npx_foreach', '_npx_while_loop', '_npx_cond'}
                             # '_npx_sequence_mask'
 
 _NP_INTERNAL_OP_PREFIX = '_npi_'

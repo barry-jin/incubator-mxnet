@@ -51,7 +51,7 @@ from ..ndarray import numpy as _mx_nd_np
 from ..ndarray.numpy import _api_internal
 from ..ndarray.numpy import _internal as _npi
 from ..ndarray.ndarray import _storage_type
-from ..dlpack import ndarray_from_numpy
+from ..dlpack import ndarray_from_numpy, ndarray_to_dlpack_for_write
 from .utils import _get_np_op
 from .fallback import *  # pylint: disable=wildcard-import,unused-wildcard-import
 from . import fallback
@@ -1584,6 +1584,26 @@ class ndarray(NDArray):  # pylint: disable=invalid-name
         """This function has been deprecated. Please refer to ``ndarray.ctx``."""
         warnings.warn('ndarray.context has been renamed to ndarray.ctx', DeprecationWarning)
         return self.as_nd_ndarray().context
+
+    def __dlpack__(self, stream=None):  # pylint: disable=unused-argument
+        """Export the array for consumption by from_dlpack() as a DLPack capsule.
+        Parameters
+        ----------
+        stream : int, optional
+            A Python integer representing a pointer to a stream.
+            Stream is provided by the consumer to the producer to instruct the producer
+            to ensure that operations can safely be performed on the array.
+        Returns
+        -------
+        capsule : PyCapsule
+            A DLPack capsule for the array, containing a DLPackManagedTensor.
+        """
+        to_dlpack_for_write = ndarray_to_dlpack_for_write()
+        return to_dlpack_for_write(self)
+
+    def __dlpack_device__(self):
+        """Return a tuple of device_type, device_id in DLPack convention"""
+        return (self.ctx.device_type, self.ctx.device_id)
 
     def copy(self, order='C'):  # pylint: disable=arguments-differ
         """Return a coyp of the array, keeping the same context.

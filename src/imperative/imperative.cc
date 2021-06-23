@@ -350,7 +350,41 @@ nnvm::Symbol Imperative::GetDeferredComputeSymbol(const std::vector<NDArray *> &
         << "must have a deferred compute history associated with them.";
     s.outputs.emplace_back(ndoutput->deferredcompute_entry_);
   }
-  return s.Copy();
+
+  std::unordered_map<nnvm::Node*, nnvm::ObjectPtr> old_new;
+  // use DFSVisit to copy all the nodes
+  DFSVisit(s.outputs, [&old_new](const nnvm::ObjectPtr& node) {
+    nnvm::ObjectPtr np = nnvm::Node::Create();
+    np->attrs = node->attrs;
+    np->info = node->info;
+    old_new[node.get()] = std::move(np);
+  });
+  // connect nodes of new graph
+  for (const auto& kv : old_new) {
+    for (const nnvm::NodeEntry& e : kv.first->inputs) {
+      nnvm::Node* ptr = e.node.get();
+      kv.second->inputs.emplace_back(nnvm::NodeEntry{old_new[ptr], e.index, e.version});
+    }
+    for (const nnvm::ObjectPtr& p : kv.first->control_deps) {
+      kv.second->control_deps.emplace_back(old_new[p.get()]);
+    }
+  }
+  // set the head
+  nnvm::Symbol s_copy;
+  for (const nnvm::NodeEntry& e : s.outputs) {
+    s_copy.outputs.emplace_back(nnvm::NodeEntry{old_new[e.node.get()], e.index, e.version});
+  }
+
+  nnvm::DFSVisit(s_copy.outputs, [&](const nnvm::ObjectPtr& n) {
+    if (n != nullptr && !n->info.empty()) {
+      Imperative::DCInfo info = Imperative::DCInfo::Get(n);
+      info.inputs_.clear();
+      info.input_handles_.clear();
+      info.outputs_.clear();
+      info.Clear(n);
+    }
+  });
+  return s_copy;
 }
 
 void Imperative::SetDeferredComputeVariable(NDArrayHandle *arrays,
@@ -382,6 +416,24 @@ void Imperative::SetDeferredComputeVariable(NDArrayHandle *arrays,
     Imperative::DCInfo& info = Imperative::DCInfo::Create(s->outputs[0].node, inputs, outputs);
     info.is_computed_ = true;
   }
+}
+
+void Imperative::DeferredComputeClear(NDArrayHandle *arrays, const int num) {
+  std::vector<nnvm::NodeEntry> outputs;
+  outputs.reserve(num);
+  for (int i = 0; i < num; i++) {
+    NDArray *nd = reinterpret_cast<NDArray *>(arrays[i]);
+    outputs.emplace_back(nd->deferredcompute_entry_);
+  }
+  nnvm::DFSVisit(outputs, [&](const nnvm::ObjectPtr& n) {
+    if (n != nullptr && !n->info.empty()) {
+      Imperative::DCInfo info = Imperative::DCInfo::Get(n);
+      info.inputs_.clear();
+      info.input_handles_.clear();
+      info.outputs_.clear();
+      info.Clear(n);
+    }
+  });
 }
 
 std::vector<NDArray*> Imperative::Backward(

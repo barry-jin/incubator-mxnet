@@ -32,7 +32,6 @@
 #include <chrono>
 #include <mxnet/ndarray.h>
 #include <opencv2/opencv.hpp>
-#include <mxnet/c_predict_api.h>
 #include "mxnet-cpp/MxNetCpp.h"
 #include <random>
 

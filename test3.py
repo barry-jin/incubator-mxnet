@@ -1,55 +1,16 @@
-# import mxnet as mx
-# from mxnet.gluon import HybridBlock, nn
-# from mxnet import np, npx
-# npx.set_np()
-# class Model(HybridBlock):
-#     def __init__(self, **kwargs):
-#         super(Model, self).__init__(**kwargs)
-#         self.dense0 = nn.Dense(2)
-#         self.dense1 = nn.Dense(2)
+from mxnet import autograd as ag
+from mxnet import np
+x = np.array([1,2,3,4])
+x.attach_grad()
+y = np.array([5,6,7,8])
+y.attach_grad()
 
-#     def forward(self, x):
-#         x = self.relu(self.dense0(x))
-#         return self.relu(self.dense1(x))
-
-#     def relu(self, X):
-#         return np.maximum(X, 0)
-
-# model = Model()
-# model.initialize(ctx=mx.cpu(0))
-# model.hybridize()
-# with mx.autograd.record():
-#     res = model(mx.np.zeros((2, 2), ctx=mx.cpu(0)))
-# res.backward()
-
-import timeit
-
-setup = """
-import mxnet as mx
-from mxnet.gluon import HybridBlock, nn
-from mxnet import np, npx
-npx.set_np()
-class Model(HybridBlock):
-    def __init__(self, **kwargs):
-        super(Model, self).__init__(**kwargs)
-        self.dense0 = nn.Dense(2)
-        self.dense1 = nn.Dense(2)
-
-    def forward(self, x):
-        # return self.relu(self.dense0(x))
-        x = self.relu(self.dense0(x))
-        return self.relu(self.dense1(x))
-
-    def relu(self, X):
-        return np.maximum(X, 0)
-
-model = Model()
-model.initialize(ctx=mx.cpu(0))
-model.hybridize()
-input = np.zeros((2, 2), ctx=mx.cpu(0))
-res = model(input)
-"""
-timer = timeit.Timer(setup=setup,
-                     stmt='res = model(input)')
-num_repeat = 1000
-print(min(timer.repeat(repeat=10, number=num_repeat)) / num_repeat)
+ag.set_recording(True)
+u = x * y
+v = u.detach()
+v.attach_grad()
+z = v * x
+ag.set_recording(False)
+z.backward()
+u.backward(v.grad)
+print(x.grad, y.grad)

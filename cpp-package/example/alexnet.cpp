@@ -251,11 +251,18 @@ int main(int argc, char const *argv[]) {
   /*if fine tune from some pre-trained model, we should load the parameters*/
   // NDArray::Load("./model/alex_params_3", nullptr, &args_map);
   /*else, we should use initializer Xavier to init the params*/
+  // auto initializer = Uniform(0.01);
+  // for (auto& arg : args_map) {
+  //   // arg.first is parameter name, and arg.second is the value
+  //   initializer(arg.first, &arg.second);
+  // }
+
   Xavier xavier = Xavier(Xavier::gaussian, Xavier::in, 2.34);
   for (auto &arg : args_map) {
     /*be careful here, the arg's name must has some specific ends or starts for
      * initializer to call*/
     xavier(arg.first, &arg.second);
+    // std::cout << arg.second << std::endl;
   }
 
   /*these binary files should be generated using im2rc tools, which can be found
@@ -266,7 +273,7 @@ int main(int argc, char const *argv[]) {
                                 "./data/mnist_data/t10k-labels-idx1-ubyte"
                               };
 
-  auto train_iter =  MXDataIter("MNISTIter");
+  auto train_iter = MXDataIter("MNISTIter");
   if (!setDataIter(&train_iter, "Train", data_files, batch_size)) {
     return 1;
   }

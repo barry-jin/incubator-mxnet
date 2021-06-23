@@ -18,9 +18,6 @@
 # Explicitly set GENERATED property https://gitlab.kitware.com/cmake/cmake/issues/18399
 set_property(SOURCE ${CMAKE_CURRENT_LIST_DIR}/../include/mxnet-cpp/op.h PROPERTY GENERATED 1)
 
-add_executable(test_regress_label test_regress_label.cpp)
-target_link_libraries(test_regress_label mxnet_cpp)
-
 add_executable(lenet lenet.cpp)
 target_link_libraries(lenet mxnet_cpp)
 
@@ -51,6 +48,26 @@ target_link_libraries(mlp_gpu mxnet_cpp)
 add_executable(resnet resnet.cpp)
 target_link_libraries(resnet mxnet_cpp)
 
+add_executable(test_optimizer test_optimizer.cpp)
+target_link_libraries(test_optimizer mxnet_cpp)
+
+add_executable(test_ndarray_copy test_ndarray_copy.cpp)
+target_link_libraries(test_ndarray_copy mxnet_cpp)
+
+add_executable(test_score test_score.cpp)
+target_link_libraries(test_score mxnet_cpp)
+
+add_executable(test_packed_func test_packed_func.cpp)
+target_link_libraries(test_packed_func mxnet_cpp)
+
+add_executable(test_block test_block.cpp)
+target_link_libraries(test_block mxnet_cpp)
+
+add_executable(simple_demo simple_demo.cpp)
+target_link_libraries(simple_demo mxnet_cpp)
+
+add_executable(multi_threaded_inference multi_threaded_inference.cc)
+target_link_libraries(multi_threaded_inference mxnet_cpp)
 
 if(MSVC)
   add_custom_target(cpp_package_deploy_library ALL

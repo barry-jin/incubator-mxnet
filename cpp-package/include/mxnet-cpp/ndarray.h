@@ -342,6 +342,14 @@ class NDArray {
    */
   mx_float At(size_t c, size_t h, size_t w) const;
   /*!
+  * \brief return value of the element at (index)
+  * \tparam T type
+  * \param index  position
+  * \return value of one dimensions array
+  */
+  template <typename T>
+  T item(size_t index = 0) const;
+  /*!
   * \brief Slice a NDArray
   * \param begin begin index in first dim
   * \param end end index in first dim
@@ -454,6 +462,15 @@ class NDArray {
   * \return the shape of current NDArray, in the form of mx_uint vector
   */
   std::vector<mx_uint> GetShape() const;
+  /*!
+  * \param idx index in shape.
+  * \return the size at index idx
+  */
+  mx_uint size(index_t idx) const;
+  /*!
+  * \return mean value of NDArray
+  */
+  NDArray mean() const;
   /*!
   * \return the data type of current NDArray
   */

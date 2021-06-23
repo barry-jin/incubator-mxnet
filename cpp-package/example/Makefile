@@ -24,19 +24,19 @@ endif
 prebuild :
 	@mkdir -p build
 	$(shell ./get_data.sh)
-	$(shell cp -r ../../lib ./)
+	$(shell cp -r ../../build ./)
 CPPEX_SRC = $(wildcard *.cpp)
 CPPEX_EXE = $(patsubst %.cpp, %, $(CPPEX_SRC))
 
 CFLAGS += -I../../include -I../../3rdparty/tvm/nnvm/include -I../../3rdparty/dmlc-core/include  -I../include
 
-ifeq ($(MXNET_USE_CPU),1)
-	CFLAGS += -D MXNET_USE_CPU
+ifeq ($(USE_CUDA),1)
+	CFLAGS += -D USE_CUDA
 endif
 
 # CPPEX_CFLAGS += -I../include
-CPPEX_EXTRA_LDFLAGS := -L../../lib -lmxnet
-MXNET_LIB_PATH := $(shell cd ../../lib; pwd)
+CPPEX_EXTRA_LDFLAGS := -L../../build -lmxnet
+MXNET_LIB_PATH := $(shell cd ../../build; pwd)
 
 .PHONY: all clean
 
@@ -46,7 +46,7 @@ debug: CPPEX_CFLAGS += -DDEBUG -g
 debug: prebuild all
 
 $(CPPEX_EXE):% : %.cpp
-	$(CXX) -std=c++11 $(CFLAGS)  $(CPPEX_CFLAGS) -o build/$@ $(filter %.cpp %.a, $^) $(CPPEX_EXTRA_LDFLAGS)
+	$(CXX) -std=c++11 $(CFLAGS)  $(CPPEX_CFLAGS) -DDEBUG -g -o build/$@ $(filter %.cpp %.a, $^) $(CPPEX_EXTRA_LDFLAGS)
 ifeq ($(UNAME_S), Darwin)
 	install_name_tool -add_rpath @loader_path build/$@
 	install_name_tool -add_rpath $(MXNET_LIB_PATH) build/$@

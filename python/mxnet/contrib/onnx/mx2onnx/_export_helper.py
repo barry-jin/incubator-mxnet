@@ -19,7 +19,9 @@
 import os
 import logging
 import mxnet as mx
+from ....util import reset_np
 
+reset_np()
 
 def load_module(sym_filepath, params_filepath):
     """Loads the MXNet model file and

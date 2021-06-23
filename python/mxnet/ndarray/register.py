@@ -375,17 +375,18 @@ def %s(%s):"""%(func_name, ', '.join(signature)))
                                          for s in 'r"""{doc_str}"""'.format(doc_str=doc_str)
                                          .splitlines(True)])
     code.insert(1, doc_str_lines)
-    return ''.join(code), doc_str, is_np_op, kwarg_names, dtype_name, arr_name
+    return ''.join(code), doc_str
 
 
 # pylint: disable=too-many-locals, invalid-name
 def _make_ndarray_function(handle, name, func_name):
     """Create a NDArray function from the FunctionHandle."""
-    code, doc_str, is_np_op, kwargs_names, dtype, arr_name = _generate_ndarray_function_code(handle, name, func_name)
+    code, doc_str = _generate_ndarray_function_code(handle, name, func_name)
+
+    # if func_name == "broadcast_add":
+    #     print(code)
 
     local = {}
-    if func_name == "arange_like":
-        print(code)
     exec(code, None, local)  # pylint: disable=exec-used
     ndarray_function = local[func_name]
     ndarray_function.__name__ = func_name

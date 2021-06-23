@@ -29,6 +29,21 @@
 
 namespace mxnet {
 
+MXNET_REGISTER_GLOBAL("add_scalar")
+.set_body([](runtime::MXNetArgs args, runtime::MXNetRetValue* ret) {
+  double sum = 0.0;
+  for (int i = 0; i < args.size(); i++) {
+    if (args[i].type_code() == kDLInt) {
+      int cur = args[i];
+      sum = sum + cur;
+    } else {
+      double cur = args[i];
+      sum = sum + cur;
+    }
+  }
+  *ret = sum;
+});
+
 MXNET_REGISTER_GLOBAL("ndarray.cached_op_invoke")
 .set_body([](runtime::MXNetArgs args, runtime::MXNetRetValue* ret) {
   CachedOpPtr op_shared = *static_cast<CachedOpPtr*>(args[0].value().v_handle);

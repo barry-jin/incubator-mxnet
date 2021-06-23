@@ -199,7 +199,9 @@ class Shuffler {
       *p++ = i;
   }
   void shuffle(std::function<void(int, int)> lambda = nullptr) {
-    random_shuffle(sequence.begin(), sequence.end());
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(sequence.begin(), sequence.end(), g);
     int n = 0;
     if (lambda != nullptr)
       for (int i : sequence)

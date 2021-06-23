@@ -148,6 +148,8 @@ def test_trainer_save_load():
     assert trainer._kvstore._updater.optimizer._get_lr(0) == 0.2
     os.putenv('MXNET_UPDATE_ON_KVSTORE', previous_update_on_kvstore)
 
+@mx.util.use_np
+@pytest.mark.skip(reason='Currently, sparse feature is not supported in Gluon2.0')
 def test_trainer_sparse_save_load():
     x = gluon.Parameter('x', shape=(10, 1), lr_mult=1.0,
                         stype='row_sparse', grad_stype='row_sparse')
@@ -345,11 +347,12 @@ def test_trainer_allreduce_hybridsequential():
     trainer = mx.gluon.Trainer(net.collect_params(), 'sgd', update_on_kvstore=False)
     for ctx in contexts:
         with mx.autograd.record():
-            out = net(mx.nd.ones((1, 1), ctx=ctx))
+            out = net(mx.np.ones((1, 1), ctx=ctx))
         out.backward()
     trainer.allreduce_grads()
 
 
+@mx.util.use_np
 def test_trainer_share_parameters():
     class Net(gluon.Block):
         def __init__(self, **kwargs):
@@ -369,7 +372,7 @@ def test_trainer_share_parameters():
     ctxes = [mx.cpu(0), mx.cpu(1)]
     net.initialize(mx.init.One(), ctx=ctxes)
     trainer = gluon.Trainer(net.collect_params(), 'sgd', {'learning_rate': 1})
-    data = mx.nd.array([[1, 1], [1, 1]])
+    data = mx.np.array([[1, 1], [1, 1]])
     xs = gluon.utils.split_and_load(data, ctxes)
     ys = []
     with mx.autograd.record():

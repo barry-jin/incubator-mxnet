@@ -28,6 +28,9 @@ from . import ndarray as nd
 from . import symbol as sym
 from . import kvstore as kvs
 from .context import cpu
+from .util import reset_np
+
+reset_np()
 
 BASE_ESTIMATOR = object
 

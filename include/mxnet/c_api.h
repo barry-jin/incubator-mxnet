@@ -1357,7 +1357,7 @@ MXNET_DLL int MXInvokeCachedOp(CachedOpHandle handle,
 /*!
  * \brief cached op set monitor callback
  */
-MXNET_DLL int MXCachedOpRegisterOpHook(NDArrayHandle handle,
+MXNET_DLL int MXCachedOpRegisterOpHook(CachedOpHandle handle,
                                        CachedOpMonitorCallback callback,
                                        bool monitor_all);
 
@@ -1398,6 +1398,14 @@ MXNET_DLL int MXNDArraySetDeferredComputeVariable(NDArrayHandle *arrays,
 MXNET_DLL int MXNDArrayGetDeferredComputeSymbol(NDArrayHandle *output_handles,
                                                 int num_outputs,
                                                 SymbolHandle *out);
+
+/*!
+ * \brief Clear the info node associated with the arrays.
+ * \param arrays array handles of arrays
+ * \param num number of arrays
+ * \return 0 when success, -1 when failure happens
+ */
+MXNET_DLL int MXNDArrayClearDeferredCompute(NDArrayHandle *arrays, int num);
 
 //--------------------------------------------
 // Part 3: symbolic configuration generation
