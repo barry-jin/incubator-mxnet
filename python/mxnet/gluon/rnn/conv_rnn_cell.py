@@ -156,11 +156,7 @@ class _BaseConvRNNCell(HybridRecurrentCell):
                               weight=self.i2h_weight.data(ctx),
                               bias=self.i2h_bias.data(ctx),
                               layout=self._conv_layout)
-<<<<<<< HEAD
-        h2h = npx.convolution(data=states[0].as_in_context(ctx),
-=======
         h2h = npx.convolution(data=states[0].as_in_ctx(ctx),
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
                               num_filter=self._hidden_channels*self._num_gates,
                               kernel=self._h2h_kernel,
                               dilate=self._h2h_dilate,
@@ -177,10 +173,7 @@ class _BaseConvRNNCell(HybridRecurrentCell):
     def forward(self, inputs, states):
         raise NotImplementedError("_BaseConvRNNCell is abstract class for convolutional RNN")
 
-<<<<<<< HEAD
-=======
     # pylint: disable=unused-argument
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     def infer_shape(self, i, x, is_bidirect):
         channel_axis = self._conv_layout.find('C')
         shape_c = x.shape[-len(self._i2h_kernel)-1:][channel_axis-1]
@@ -450,11 +443,7 @@ class _ConvLSTMCell(_BaseConvRNNCell):
         forget_gate = npx.activation(slice_gates[1], act_type="sigmoid")
         in_transform = self._get_activation(slice_gates[2], self._activation)
         out_gate = npx.activation(slice_gates[3], act_type="sigmoid")
-<<<<<<< HEAD
-        next_c = forget_gate * states[1].as_in_context(inputs.ctx) + in_gate * in_transform
-=======
         next_c = forget_gate * states[1].as_in_ctx(inputs.ctx) + in_gate * in_transform
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         next_h = np.multiply(out_gate, self._get_activation(next_c, self._activation))
 
         return next_h, [next_h, next_c]
@@ -717,11 +706,7 @@ class _ConvGRUCell(_BaseConvRNNCell):
         next_h_tmp = self._get_activation(i2h + reset_gate * h2h, self._activation)
 
         next_h = (1. - update_gate) * next_h_tmp + update_gate * \
-<<<<<<< HEAD
-            states[0].as_in_context(inputs.ctx)
-=======
             states[0].as_in_ctx(inputs.ctx)
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
         return next_h, [next_h]
 

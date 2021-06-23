@@ -45,11 +45,7 @@ MXNET_REGISTER_API("_npx.batch_norm")
   // output_mean_var
   param.output_mean_var = args[9].operator bool();
   // axis
-<<<<<<< HEAD
-  param.axis= args[10].operator int();
-=======
   param.axis = args[10].operator int();
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
   // cudnn_off
   param.cudnn_off = args[11].operator bool();
   // min_calib_range
@@ -71,11 +67,7 @@ MXNET_REGISTER_API("_npx.batch_norm")
   int num_inputs = 5;
   std::vector<NDArray*> inputs;
   inputs.reserve(num_inputs);
-<<<<<<< HEAD
-  for (int i = 0; i < 5; ++i) {
-=======
   for (int i = 0; i < num_inputs; ++i) {
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     inputs.push_back(args[i].operator mxnet::NDArray*());
   }
   int num_outputs = 0;

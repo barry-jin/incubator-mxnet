@@ -88,18 +88,9 @@ MXNET_REGISTER_API("_npx.convolution")
   } else {
     param.kernel = TShape(args[num_inputs].operator ObjectRef());
   }
-<<<<<<< HEAD
-  if (param.kernel.ndim() > 2) {
-    CHECK_EQ(param.kernel.ndim(), 3U) << param.kernel.ndim() << "D convolution not supported";
-  }
-  // layout
-  if (args[num_inputs + 10].type_code() == kNull) {
-    param.cudnn_tune = dmlc::nullopt;
-=======
   // layout
   if (args[num_inputs + 10].type_code() == kNull) {
     param.layout = dmlc::nullopt;
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
   } else {
     param.layout = String2Layout(args[num_inputs + 10]);
   }

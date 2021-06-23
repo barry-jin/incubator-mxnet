@@ -46,13 +46,7 @@ MXNET_REGISTER_API("_npx.embedding")
   // output_dim
   param.output_dim = args[3].operator int64_t();
   // dtype
-<<<<<<< HEAD
-  if (args[4].type_code() != kNull) {
-    param.dtype = String2MXNetTypeWithBool(args[4].operator std::string());
-  }
-=======
   param.dtype = String2MXNetTypeWithBool(args[4].operator std::string());
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
   // sparse_grad;
   if (args[5].type_code() == kNull) {
     param.sparse_grad = false;

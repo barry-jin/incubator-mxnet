@@ -33,31 +33,11 @@
 #include "mxnet-cpp/operator.hpp"
 #include "mxnet-cpp/optimizer.hpp"
 #include "mxnet-cpp/kvstore.hpp"
-<<<<<<< HEAD
-#include "mxnet-cpp/operator_rt.hpp"
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 #include "mxnet-cpp/op.h"
 #include "mxnet-cpp/op_suppl.h"
 #include "mxnet-cpp/io.hpp"
 #include "mxnet-cpp/metric.h"
 #include "mxnet-cpp/initializer.h"
 #include "mxnet-cpp/contrib.h"
-<<<<<<< HEAD
-#include "mxnet-cpp/packed_func.h"
-#include "mxnet-cpp/op_rt_map.h"
-#include "mxnet-cpp/operator_rt.h"
-#include "mxnet-cpp/container/adt.h"
-#include "mxnet-cpp/container/adt.hpp"
-#include "mxnet-cpp/block.h"
-#include "mxnet-cpp/block.hpp"
-#include "mxnet-cpp/autograd.h"
-#include "mxnet-cpp/trainer.h"
-#include "mxnet-cpp/loss.h"
-#include "mxnet-cpp/loss.hpp"
-#include "mxnet-cpp/nn/basic_layers.h"
-#include "mxnet-cpp/nn/basic_layers.hpp"
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
 #endif  // MXNET_CPP_MXNETCPP_H_

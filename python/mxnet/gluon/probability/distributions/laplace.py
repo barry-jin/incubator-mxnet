@@ -22,11 +22,7 @@ __all__ = ['Laplace']
 
 from .constraint import Real, Positive
 from .distribution import Distribution
-<<<<<<< HEAD
-from .utils import getF, sample_n_shape_converter
-=======
 from .utils import sample_n_shape_converter
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 from .... import np
 
 

@@ -84,29 +84,6 @@ def test_logistic_loss_equal_bce():
 def test_ctc_loss():
     loss = gluon.loss.CTCLoss()
     l = loss(mx.np.ones((2,20,4)), mx.np.array([[1,0,-1,-1],[2,1,1,-1]]))
-<<<<<<< HEAD
-    assert_almost_equal(l, np.array([18.82820702, 16.50581741]))
-
-    loss = gluon.loss.CTCLoss(layout='TNC')
-    l = loss(mx.np.ones((20,2,4)), mx.np.array([[1,0,-1,-1],[2,1,1,-1]]))
-    assert_almost_equal(l, np.array([18.82820702, 16.50581741]))
-
-    loss = gluon.loss.CTCLoss(layout='TNC', label_layout='TN')
-    l = loss(mx.np.ones((20,2,4)), mx.np.array([[1,0,-1,-1],[2,1,1,-1]]).T)
-    assert_almost_equal(l, np.array([18.82820702, 16.50581741]))
-
-    loss = gluon.loss.CTCLoss()
-    l = loss(mx.np.ones((2,20,4)), mx.np.array([[2,1,2,2],[3,2,2,2]]), None, mx.np.array([2,3]))
-    assert_almost_equal(l, np.array([18.82820702, 16.50581741]))
-
-    loss = gluon.loss.CTCLoss()
-    l = loss(mx.np.ones((2,25,4)), mx.np.array([[2,1,-1,-1],[3,2,2,-1]]), mx.np.array([20,20]))
-    assert_almost_equal(l, np.array([18.82820702, 16.50581741]))
-
-    loss = gluon.loss.CTCLoss()
-    l = loss(mx.np.ones((2,25,4)), mx.np.array([[2,1,3,3],[3,2,2,3]]), mx.np.array([20,20]), mx.np.array([2,3]))
-    assert_almost_equal(l, np.array([18.82820702, 16.50581741]))
-=======
     assert_almost_equal(l, onp.array([18.82820702, 16.50581741]))
 
     loss = gluon.loss.CTCLoss(layout='TNC')
@@ -128,7 +105,6 @@ def test_ctc_loss():
     loss = gluon.loss.CTCLoss()
     l = loss(mx.np.ones((2,25,4)), mx.np.array([[2,1,3,3],[3,2,2,3]]), mx.np.array([20,20]), mx.np.array([2,3]))
     assert_almost_equal(l, onp.array([18.82820702, 16.50581741]))
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
 
 @mx.util.use_np

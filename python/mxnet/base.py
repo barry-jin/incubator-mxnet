@@ -836,15 +836,6 @@ _NP_OP_IMPLEMENTED_SET = {'_np_reshape'}
 _NP_EXT_OP_PREFIX = '_npx_'
 _NP_EXT_OP_SUBMODULE_LIST = ['_image_', '_random_']
 _NP_EXT_OP_IMPLEMENTED_SET = {'_npx_softmax', '_npx_log_softmax', '_npx_masked_softmax',
-<<<<<<< HEAD
-                              '_npx_masked_log_softmax', '_npx_activation', '_npx_batch_norm',
-                              '_npx_fully_connected', '_npx_pick', '_npx_convolution',
-                              '_npx_deconvolution', '_npx_pooling', '_npx_dropout', 
-                              '_npx_one_hot', '_npx_rnn', '_npx_embedding', '_npx_topk',
-                              '_npx_layer_norm', '_npx_leaky_relu', '_npx_batch_dot', '_npx_broadcast_like',
-                              '_npx_arange_like', '_npx_group_norm', '_npx_foreach', '_npx_while_loop', '_npx_cond'}
-                            # '_npx_sequence_mask'
-=======
                               '_npx_masked_log_softmax', '_npx_activation',
                               '_npx_batch_norm', '_npx_fully_connected', '_npx_pick',
                               '_npx_convolution', '_npx_deconvolution', '_npx_pooling',
@@ -852,7 +843,6 @@ _NP_EXT_OP_IMPLEMENTED_SET = {'_npx_softmax', '_npx_log_softmax', '_npx_masked_s
                               '_npx_topk', '_npx_layer_norm', '_npx_leaky_relu', '_npx_batch_dot',
                               '_npx_broadcast_like', '_npx_arange_like', '_npx_group_norm',
                               '_npx_foreach', '_npx_while_loop', '_npx_cond'}
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
 _NP_INTERNAL_OP_PREFIX = '_npi_'
 
@@ -911,18 +901,10 @@ def _init_np_op_module(root_module_name, np_module_name, mx_module_name, make_op
         op_name_prefix = _NP_OP_PREFIX
         submodule_name_list = _NP_OP_SUBMODULE_LIST
         op_implemented_set = _NP_OP_IMPLEMENTED_SET
-<<<<<<< HEAD
-        # op_implemented_set = set()
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     elif np_module_name == 'numpy_extension':
         op_name_prefix = _NP_EXT_OP_PREFIX
         submodule_name_list = _NP_EXT_OP_SUBMODULE_LIST
         op_implemented_set = _NP_EXT_OP_IMPLEMENTED_SET
-<<<<<<< HEAD
-        # op_implemented_set = set()
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     elif np_module_name == 'numpy._internal':
         op_name_prefix = _NP_INTERNAL_OP_PREFIX
         submodule_name_list = []

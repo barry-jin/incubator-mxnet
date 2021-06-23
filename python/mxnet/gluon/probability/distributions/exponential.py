@@ -22,13 +22,8 @@ __all__ = ['Exponential']
 
 from .exp_family import ExponentialFamily
 from .constraint import Positive
-<<<<<<< HEAD
-from .utils import getF, sample_n_shape_converter, cached_property
-from .... import np, npx
-=======
 from .utils import sample_n_shape_converter, cached_property
 from .... import np
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
 
 class Exponential(ExponentialFamily):
@@ -71,11 +66,7 @@ class Exponential(ExponentialFamily):
 
     def sample_n(self, size=None):
         return np.random.exponential(self.scale,
-<<<<<<< HEAD
-                                            size=sample_n_shape_converter(size))
-=======
                                      size=sample_n_shape_converter(size))
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
     def broadcast_to(self, batch_shape):
         new_instance = self.__new__(type(self))

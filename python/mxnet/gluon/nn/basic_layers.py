@@ -23,21 +23,12 @@ __all__ = ['Sequential', 'HybridSequential', 'Dense', 'Dropout', 'Embedding',
            'Flatten', 'Lambda', 'HybridLambda', 'Concatenate', 'HybridConcatenate', 'Identity']
 import warnings
 import uuid
-<<<<<<< HEAD
-import inspect
-from mxnet.base import _NP_OP_PREFIX
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 import numpy as _np
 
 from .activations import Activation
 from ..block import Block, HybridBlock
 from ..utils import _indent
-<<<<<<< HEAD
-from ... import np, npx, ndarray as nd, context, _deferred_compute as dc
-=======
 from ... import np, npx, context
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 from ...util import use_np
 from ..parameter import Parameter
 
@@ -109,10 +100,6 @@ class Sequential(Block):
         super(Sequential, self).hybridize(active, **kwargs)
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class HybridSequential(HybridBlock):
     """Stacks HybridBlocks sequentially.
@@ -134,12 +121,6 @@ class HybridSequential(HybridBlock):
             self._layers.append(block)
             self.register_child(block)
 
-<<<<<<< HEAD
-    def __call__(self, *args, **kwargs):
-        return super().__call__(*args, **kwargs)
-
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     def forward(self, x, *args):
         for block in self._children.values():
             x = block()(x, *args)
@@ -171,10 +152,6 @@ class HybridSequential(HybridBlock):
         return len(self._children)
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class Dense(HybridBlock):
     r"""Just your regular densely-connected NN layer.
@@ -272,10 +249,6 @@ class Dense(HybridBlock):
                         layout='{0} -> {1}'.format(shape[1] if shape[1] else None, shape[0]))
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class Dropout(HybridBlock):
     """Applies Dropout to the input.
@@ -319,10 +292,6 @@ class Dropout(HybridBlock):
                         **self.__dict__)
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class _BatchNorm(HybridBlock):
     """Abstract BatchNorm layer (private, used as implementation base).
@@ -572,10 +541,6 @@ class BatchNormReLU(_BatchNorm):
             in_channels=in_channels, **kwargs)
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class Embedding(HybridBlock):
     r"""Turns non-negative integers (indexes/tokens) into dense vectors
@@ -629,10 +594,6 @@ class Embedding(HybridBlock):
                         **self._kwargs)
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class Flatten(HybridBlock):
     r"""Flattens the input to two dimensional.
@@ -653,10 +614,6 @@ class Flatten(HybridBlock):
         return self.__class__.__name__
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class InstanceNorm(HybridBlock):
     r"""
@@ -758,10 +715,6 @@ class InstanceNorm(HybridBlock):
                                            for k, v in self._kwargs.items()]))
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class LayerNorm(HybridBlock):
     r"""
@@ -853,10 +806,6 @@ class LayerNorm(HybridBlock):
                                            for k, v in self._kwargs.items()]))
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class GroupNorm(HybridBlock):
     r"""
@@ -937,11 +886,7 @@ class GroupNorm(HybridBlock):
     def forward(self, data):
         ctx = data.ctx
         norm_data = npx.group_norm(data, gamma=self.gamma.data(ctx), beta=self.beta.data(ctx),
-<<<<<<< HEAD
-                                 num_groups=self._num_groups, eps=self._epsilon)
-=======
                                    num_groups=self._num_groups, eps=self._epsilon)
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         return norm_data
 
     def infer_shape(self, data, *args):
@@ -1005,10 +950,6 @@ class Lambda(Block):
                                            function=self._func_impl.__name__)
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class HybridLambda(HybridBlock):
     r"""Wraps an operator or an expression as a HybridBlock object.
@@ -1091,10 +1032,6 @@ class Concatenate(Sequential):
         return out
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class HybridConcatenate(HybridSequential):
     """Lays `HybridBlock` s concurrently.
@@ -1127,10 +1064,6 @@ class HybridConcatenate(HybridSequential):
         return out
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class Identity(HybridBlock):
     """Block that passes through the input directly.

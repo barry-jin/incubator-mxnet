@@ -26,10 +26,6 @@ from ..parameter import Parameter
 from ...util import use_np
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class Activation(HybridBlock):
     r"""Applies an activation function to input.
@@ -63,10 +59,6 @@ class Activation(HybridBlock):
                         **self.__dict__)
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class LeakyReLU(HybridBlock):
     r"""Leaky version of a Rectified Linear Unit.
@@ -108,10 +100,6 @@ class LeakyReLU(HybridBlock):
                         alpha=self._alpha)
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class PReLU(HybridBlock):
     r"""Parametric leaky version of a Rectified Linear Unit.
@@ -155,10 +143,6 @@ class PReLU(HybridBlock):
         return npx.leaky_relu(x, gamma=self.alpha.data(ctx), act_type='prelu', name='fwd')
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class ELU(HybridBlock):
     r"""
@@ -188,10 +172,6 @@ class ELU(HybridBlock):
         return npx.leaky_relu(x, act_type='elu', slope=self._alpha)
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class SELU(HybridBlock):
     r"""
@@ -213,10 +193,6 @@ class SELU(HybridBlock):
         return npx.leaky_relu(x, act_type='selu', name='fwd')
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class GELU(HybridBlock):
     r"""
@@ -238,10 +214,6 @@ class GELU(HybridBlock):
         return npx.leaky_relu(x, act_type='gelu', name='fwd')
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class Swish(HybridBlock):
     r"""
@@ -269,10 +241,6 @@ class Swish(HybridBlock):
         return x * npx.sigmoid(self._beta * x)
 
 
-<<<<<<< HEAD
-#pylint: disable=W0223
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class SiLU(HybridBlock):
     r"""

@@ -323,15 +323,9 @@ def test_gluon_ctc_consistency():
 
 def test_global_norm_clip_multi_device():
     for check_isfinite in [True, False]:
-<<<<<<< HEAD
-        x1 = mx.np.ones((3, 3), ctx=mx.cpu(0))
-        x2 = mx.np.ones((4, 4), ctx=mx.cpu(0))
-        x3 = mx.np.ones((7, 4), ctx=mx.cpu(0))
-=======
         x1 = mx.np.ones((3, 3), ctx=mx.gpu(0))
         x2 = mx.np.ones((4, 4), ctx=mx.cpu(0))
         x3 = mx.np.ones((7, 4), ctx=mx.gpu(0))
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         x4 = mx.np.ones((7, 4), ctx=mx.cpu(0))
         norm = gluon.utils.clip_global_norm(
             [x1, x2, x3, x4], 1.0, check_isfinite=check_isfinite)
@@ -339,17 +333,10 @@ def test_global_norm_clip_multi_device():
             assert norm == 9.0
         else:
             assert norm.item() == 9.0
-<<<<<<< HEAD
-        assert_almost_equal(x1, np.ones((3, 3)) / 9)
-        assert_almost_equal(x2, np.ones((4, 4)) / 9)
-        assert_almost_equal(x3, np.ones((7, 4)) / 9)
-        assert_almost_equal(x4, np.ones((7, 4)) / 9)
-=======
         assert_almost_equal(x1, _np.ones((3, 3)) / 9)
         assert_almost_equal(x2, _np.ones((4, 4)) / 9)
         assert_almost_equal(x3, _np.ones((7, 4)) / 9)
         assert_almost_equal(x4, _np.ones((7, 4)) / 9)
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
 
 def _check_batchnorm_result(input, num_devices=1, cuda=False):

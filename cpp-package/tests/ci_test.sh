@@ -16,69 +16,6 @@
 # under the License.
 
 set -e # exit on the first error
-<<<<<<< HEAD
-cd $(dirname $(greadlink -f $0))/../example
-echo $PWD
-export LD_LIBRARY_PATH=$(greadlink -f ../../build):$LD_LIBRARY_PATH
-echo $LD_LIBRARY_PATH
-ls -l ../../build/
-
-./get_data.sh
-
-cp ../../build/cpp-package/example/lenet .
-./lenet 1
-
-cp ../../build/cpp-package/example/alexnet .
-./alexnet 1
-
-# not converge
-
-cp ../../build/cpp-package/example/lenet_with_mxdataiter .
-./lenet_with_mxdataiter 1
-
-cp ../../build/cpp-package/example/resnet .
-./resnet 1
-
-# not converge
-
-cp ../../build/cpp-package/example/inception_bn .
-./inception_bn 1
-
-# [20:14:28] /work/mxnet/cpp-package/example/inception_bn.cpp:259: With Error: MXNetError: Check failed: inputs.size() == num_inputs() (280 vs. 418) : 
-# Stack trace:
-#   File "/work/mxnet/src/imperative/cached_op.cc", line 783
-
-cp ../../build/cpp-package/example/mlp .
-./mlp 150
-
-# [20:15:25] /work/mxnet/cpp-package/example/mlp.cpp:180: With Error: MXNetError: Check failed: !is_none(): 
-# Stack trace:
-#   File "/work/mxnet/include/mxnet/ndarray.h", line 325
-
-cp ../../build/cpp-package/example/mlp_cpu .
-./mlp_cpu
-
-cp ../../build/cpp-package/example/mlp_gpu .
-./mlp_gpu
-
-# cp ../../build/cpp-package/example/test_optimizer .
-# ./test_optimizer
-# no test
-
-# cp ../../build/cpp-package/example/test_kvstore .
-# ./test_kvstore
-# no test
-
-cp ../../build/cpp-package/example/test_score .
-./test_score 0.93
-
-cp ../../build/cpp-package/example/test_ndarray_copy .
-./test_ndarray_copy
-
-# skippping temporarily, tracked by https://github.com/apache/incubator-mxnet/issues/20011
-#cp ../../build/cpp-package/example/test_regress_label .
-#./test_regress_label
-=======
 cd $(dirname $(readlink -f $0))/../example
 echo $PWD
 export LD_LIBRARY_PATH=$(readlink -f /work/build):$LD_LIBRARY_PATH
@@ -126,17 +63,11 @@ cp /work/build/cpp-package/example/test_ndarray_copy .
 # skippping temporarily, tracked by https://github.com/apache/incubator-mxnet/issues/20011
 cp /work/build/cpp-package/example/test_regress_label .
 ./test_regress_label
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
 sh unittests/unit_test_mlp_csv.sh
 
 cd inference
 
-<<<<<<< HEAD
-cp ../../../build/cpp-package/example/sentiment_analysis_rnn .
-./unit_test_sentiment_analysis_rnn.sh
-cd ..
-=======
 cp /work/build/cpp-package/example/sentiment_analysis_rnn .
 ./unit_test_sentiment_analysis_rnn.sh
 
@@ -146,4 +77,3 @@ cp ../../../../build/cpp-package/example/multi_threaded_inference .
 ./unit_test_multi_threaded_inference.sh
 
 cd ../..
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b

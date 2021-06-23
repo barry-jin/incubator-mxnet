@@ -88,11 +88,7 @@ int main(int argc, char const *argv[]) {
   auto dev_ctx = Context::cpu();
   int num_gpu;
   MXGetGPUCount(&num_gpu);
-<<<<<<< HEAD
-#if USE_CUDA
-=======
 #if MXNET_USE_CUDA
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
   if (num_gpu > 0) {
     dev_ctx = Context::gpu();
   }

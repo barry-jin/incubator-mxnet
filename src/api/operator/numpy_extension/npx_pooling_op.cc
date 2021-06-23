@@ -108,11 +108,7 @@ MXNET_REGISTER_API("_npx.pooling")
     } else {
       if (param.global_pool == false) {
         CHECK_EQ(param.kernel.ndim(), 3U) << param.kernel.ndim()
-<<<<<<< HEAD
-            << "D pooling not supported";
-=======
             << "D pooling not supported. Only 1D, 2D, and 3D pooling are supported.";
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
       }
       param.stride = mshadow::Shape3(1, 1, 1);
     }

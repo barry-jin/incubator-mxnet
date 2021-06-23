@@ -120,11 +120,7 @@ int main(int argc, char const *argv[]) {
   float weight_decay = 1e-4;
 
   auto ctx = Context::gpu();
-<<<<<<< HEAD
-#if !USE_CUDA
-=======
 #if !MXNET_USE_CUDA
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
   ctx = Context::cpu();;
 #endif
 

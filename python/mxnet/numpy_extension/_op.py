@@ -202,11 +202,8 @@ def activation(data, act_type='relu', **kwargs):
 
     The following activation functions are supported:
 
-<<<<<<< HEAD
-=======
     - `log_sigmoid`: :math:`y = log(\frac{1}{1 + exp(-x)})`
     - `mish`: :math:`y = x * tanh(log(1 + exp(x)))`
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     - `relu`: Rectified Linear Unit, :math:`y = max(x, 0)`
     - `sigmoid`: :math:`y = \frac{1}{1 + exp(-x)}`
     - `tanh`: Hyperbolic tangent, :math:`y = \frac{exp(x) - exp(-x)}{exp(x) + exp(-x)}`
@@ -217,11 +214,7 @@ def activation(data, act_type='relu', **kwargs):
     ----------
     data : NDArray
         The input array.
-<<<<<<< HEAD
-    act_type : {'relu', 'sigmoid', 'softrelu', 'softsign', 'tanh'}, required
-=======
     act_type : {'log_sigmoid', 'mish', 'relu', 'sigmoid', 'softrelu', 'softsign', 'tanh'}, required
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         Activation function to be applied.
 
     Returns
@@ -1413,8 +1406,3 @@ def group_norm(data, gamma, beta, num_groups=1, eps=1e-3, output_mean_var=False)
     """
     return _mx_nd_npx.group_norm(data=data, gamma=gamma, beta=beta, num_groups=num_groups,
                                  eps=eps, output_mean_var=output_mean_var)
-<<<<<<< HEAD
-
-
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b

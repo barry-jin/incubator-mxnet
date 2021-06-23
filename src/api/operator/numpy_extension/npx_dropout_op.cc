@@ -49,11 +49,7 @@ MXNET_REGISTER_API("_npx.dropout")
   op::DropoutParam param;
   // inputs
   int num_inputs = 1;
-<<<<<<< HEAD
-  NDArray* inputs[] = {args[0].operator mxnet::NDArray*()};  
-=======
   NDArray* inputs[] = {args[0].operator mxnet::NDArray*()};
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
   // p
   param.p = args[1].operator double();
   // mode

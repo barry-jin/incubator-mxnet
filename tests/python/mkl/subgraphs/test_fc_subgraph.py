@@ -72,11 +72,7 @@ def test_fc_eltwise(data_shape, use_bias, flatten, alg):
 
     def forward(self, x):
       fc_out = self.fc(x)
-<<<<<<< HEAD
-      if self.alg in ['relu', 'sigmoid', 'log_sigmoid', 'tanh', 'softrelu']:
-=======
       if self.alg in ['relu', 'sigmoid', 'log_sigmoid', 'mish', 'tanh', 'softrelu']:
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         out = mx.npx.activation(fc_out, act_type=self.alg)
       elif self.alg in ['gelu', 'elu', 'leaky']:
         out = mx.npx.leaky_relu(fc_out, act_type=self.alg)

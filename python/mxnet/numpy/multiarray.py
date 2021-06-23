@@ -806,11 +806,7 @@ class ndarray(NDArray):  # pylint: disable=invalid-name
             if not unsupported:
                 new_shape += (-4,)
                 sliced = _npi.slice(self, begin, end, step)
-<<<<<<< HEAD
-                return reshape(sliced, new_shape)
-=======
                 return _mx_nd_np.reshape(sliced, new_shape)
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
         # Special handling for cases only supported in imperative mode
         if dc.is_deferred_compute():

@@ -149,13 +149,8 @@ int MXImperativeInvoke(AtomicSymbolCreator creator,
   API_BEGIN();
   MXImperativeInvokeImpl(creator, num_inputs, inputs, num_outputs, outputs,
                          num_params, param_keys, param_vals);
-<<<<<<< HEAD
-  NDArray** out_array = *reinterpret_cast<NDArray***>(outputs);
-  if (out_stypes != nullptr) {
-=======
   if (out_stypes != nullptr) {
     NDArray** out_array = *reinterpret_cast<NDArray***>(outputs);
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     ret->out_types.clear();
     ret->out_types.reserve(*num_outputs);
     for (int i = 0; i < *num_outputs; ++i) {
@@ -254,14 +249,8 @@ int MXInvokeCachedOp(CachedOpHandle handle,
     }
     *outputs = dmlc::BeginPtr(ret->ret_handles);
   }
-<<<<<<< HEAD
-
-  NDArray** out_array = reinterpret_cast<NDArray**>(*outputs);
-  if (out_stypes != nullptr) {
-=======
   if (out_stypes != nullptr) {
     NDArray** out_array = reinterpret_cast<NDArray**>(*outputs);
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     ret->out_types.clear();
     ret->out_types.reserve(*num_outputs);
     for (int i = 0; i < *num_outputs; ++i) {

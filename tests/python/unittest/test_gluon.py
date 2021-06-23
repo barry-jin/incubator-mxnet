@@ -245,10 +245,6 @@ def test_sparse_hybrid_block():
         # an exception is expected when forwarding a HybridBlock w/ sparse param
         y = net(x)
 
-<<<<<<< HEAD
-=======
-
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 def test_hybrid_block_none_args():
     class Foo(gluon.HybridBlock):
@@ -786,11 +782,7 @@ def check_split_data(x, num_slice, batch_axis, **kwargs):
     assert len(res) == num_slice
     mx.test_utils.assert_almost_equal(mx.np.concatenate(res, axis=batch_axis).asnumpy(),
                                       x.asnumpy())
-<<<<<<< HEAD
-    np_res = np.array_split(x.asnumpy(), num_slice, axis=batch_axis)
-=======
     np_res = onp.array_split(x.asnumpy(), num_slice, axis=batch_axis)
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     res_asnp = [s.asnumpy() for s in res]
     for r1, r2 in zip(np_res, res_asnp):
         assert all(r1.reshape(-1) == r2.reshape(-1))
@@ -1149,11 +1141,7 @@ def test_dtype():
 
     net = Net(5, 10)
     net.initialize()
-<<<<<<< HEAD
-    out = net(mx.np.ones((3,), dtype=np.float64))
-=======
     out = net(mx.np.ones((3,), dtype=onp.float64))
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     mx.npx.waitall()
 
 def test_fill_shape_load():
@@ -1370,11 +1358,7 @@ def test_save_load(tmpdir):
     net = Network()
     net.initialize(mx.init.Xavier(), ctx=mx.cpu())
     net.hybridize()
-<<<<<<< HEAD
-    x = np.random.rand(32, 10, 10)
-=======
     x = onp.random.rand(32, 10, 10)
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     x = mx.np.array(x).as_in_context(mx.cpu())
     net(x)
     # _, param_path = tempfile.mkstemp(suffix='.params', dir=str(tmpdir))
@@ -1424,40 +1408,6 @@ def test_save_load_deduplicate_with_shared_params(tmpdir):
     c.load_parameters(param_path)
 
 
-<<<<<<< HEAD
-def test_symbol_block_save_load(tmpdir):
-    tmp = str(tmpdir)
-    tmpfile = os.path.join(tmp, 'resnet34_fp64')
-
-    class Net(gluon.HybridBlock):
-        def __init__(self):
-            super(Net, self).__init__()
-            backbone = gluon.model_zoo.vision.resnet18_v1()
-            backbone.initialize()
-            backbone.hybridize()
-            backbone(mx.np.random.normal(size=(1, 3, 32, 32)))
-            sym, params = backbone.export(None)
-            data = mx.sym.var('data')
-            self.backbone = gluon.SymbolBlock(sym, data)
-            self.backbone.load_dict(params)
-            self.body = nn.Conv2D(3, 1)
-
-        def forward(self, x):
-            x = self.body(x)
-            return self.backbone(x)
-
-    net1 = Net()
-    net1.initialize(mx.init.Normal())
-    net1.hybridize()
-    net1(mx.np.random.normal(size=(1, 3, 32, 32)))
-
-    params_file = os.path.join(tmp, './test_symbol_block_save_load.params')
-    net1.save_parameters(params_file)
-    net2 = Net()
-    net2.load_parameters(params_file)
-
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 def test_hybrid_multi_context():
     net = mx.gluon.model_zoo.vision.get_resnet(1, 18)
     net.initialize(ctx=[mx.cpu(0), mx.cpu(1)])
@@ -1484,15 +1434,9 @@ def test_zero_grad():
         for _ in range(nArrays):
             arrType = random.choice(dtype) if isinstance(dtype, list) else dtype
             shape = ()
-<<<<<<< HEAD
-            for _ in range(np.random.randint(1, 5)):
-                shape = shape + (np.random.randint(1, 10),)
-            arr.append(mx.np.random.uniform(shape=shape, dtype=arrType, ctx=ctx))
-=======
             for _ in range(onp.random.randint(1, 5)):
                 shape = shape + (onp.random.randint(1, 10),)
             arr.append(mx.nd.random.uniform(shape=shape, dtype=arrType, ctx=ctx))
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
         # Reset all arrays
         mx.np.reset_arrays(*arr, num_arrays=len(arr))
@@ -1749,11 +1693,7 @@ def test_sparse_hybrid_block():
             self.w = gluon.Parameter('w', shape=(units, units))
 
         def forward(self, x, w):
-<<<<<<< HEAD
-            return np.dot(x, w)
-=======
             return mx.np.dot(x, w)
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
     class SparseBlock(mx.gluon.HybridBlock):
         def __init__(self, units):
@@ -2543,15 +2483,9 @@ def test_slice_pooling2d_slice_pooling2d():
             y_slice = mx.npx.slice(y, begin=self.slice[1][0], end=self.slice[1][1])
             out = self.pool1(y_slice)
             return out
-<<<<<<< HEAD
-    x = mx.np.random.uniform(size=(8, 64, 128, 128))
-    # x = mx.np.random.uniform(size=(16, 128, 256, 256))
-    slice = [[(4, 0, 50, 25), (16, -1, -1, -1)], [(0, 32, 0, 25), (2, -1, -1, -1)]]
-=======
 
     x = mx.np.random.uniform(size=(16, 128, 256, 256))
     slice = [[(8, 0, 100, 50), (16, -1, -1, -1)], [(0, 64, 0, 50), (2, -1, -1, -1)]]
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     for i in range(len(pooling_layers)):
         for j in range(len(pooling_layers)):
             if isinstance(pooling_layers[i], (nn.GlobalMaxPool2D, nn.GlobalAvgPool2D)):
@@ -2946,11 +2880,7 @@ def test_gluon_param_load_dtype_source():
     net.save_parameters('test_gluon_param_load_dtype_source.params')
     net.cast('float32')
     net.load_parameters('test_gluon_param_load_dtype_source.params', cast_dtype=True, dtype_source="saved")
-<<<<<<< HEAD
-    assert net.weight.dtype == np.float16
-=======
     assert net.weight.dtype == onp.float16
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     mx.npx.waitall()
 
 @use_np
@@ -2964,11 +2894,7 @@ def test_squeeze_consistency():
 
     block = Foo()
     block.hybridize()
-<<<<<<< HEAD
-    shape = (np.random.randint(1, 10), np.random.randint(1, 10), 1)
-=======
     shape = (onp.random.randint(1, 10), onp.random.randint(1, 10), 1)
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     block(mx.np.ones(shape))
 
 def test_shared_parameters_with_non_default_initializer():
@@ -3150,11 +3076,7 @@ def test_pixelshuffle1d():
     shape_before = (1, nchan * up_x, nx)
     shape_after = (1, nchan, nx * up_x)
     layer = nn.PixelShuffle1D(up_x)
-<<<<<<< HEAD
-    x = mx.np.arange(np.prod(shape_before)).reshape(shape_before)
-=======
     x = mx.np.arange(onp.prod(shape_before)).reshape(shape_before)
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     y = layer(x)
     assert y.shape == shape_after
     assert_allclose(
@@ -3172,11 +3094,7 @@ def test_pixelshuffle2d():
     shape_before = (1, nchan * up_x * up_y, nx, ny)
     shape_after = (1, nchan, nx * up_x, ny * up_y)
     layer = nn.PixelShuffle2D((up_x, up_y))
-<<<<<<< HEAD
-    x = mx.np.arange(np.prod(shape_before)).reshape(shape_before)
-=======
     x = mx.np.arange(onp.prod(shape_before)).reshape(shape_before)
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     y = layer(x)
     assert y.shape == shape_after
     # - Channels are reshaped to form 2x3 blocks
@@ -3208,11 +3126,7 @@ def test_pixelshuffle3d():
     shape_before = (1, nchan * up_x * up_y * up_z, nx, ny, nz)
     shape_after = (1, nchan, nx * up_x, ny * up_y, nz * up_z)
     layer = nn.PixelShuffle3D((up_x, up_y, up_z))
-<<<<<<< HEAD
-    x = mx.np.arange(np.prod(shape_before)).reshape(shape_before)
-=======
     x = mx.np.arange(onp.prod(shape_before)).reshape(shape_before)
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     y = layer(x)
     assert y.shape == shape_after
     # - Channels are reshaped to form 2x1x2 blocks

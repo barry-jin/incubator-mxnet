@@ -28,11 +28,6 @@ try:
     import scipy.special as sc
 except ImportError:
     sc = None
-<<<<<<< HEAD
-from .... import symbol as sym
-from .... import ndarray as nd
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 from .... import np, npx
 
 

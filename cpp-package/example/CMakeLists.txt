@@ -57,18 +57,6 @@ target_link_libraries(test_ndarray_copy mxnet_cpp)
 add_executable(test_score test_score.cpp)
 target_link_libraries(test_score mxnet_cpp)
 
-<<<<<<< HEAD
-add_executable(test_packed_func test_packed_func.cpp)
-target_link_libraries(test_packed_func mxnet_cpp)
-
-add_executable(test_block test_block.cpp)
-target_link_libraries(test_block mxnet_cpp)
-
-add_executable(simple_demo simple_demo.cpp)
-target_link_libraries(simple_demo mxnet_cpp)
-
-add_executable(multi_threaded_inference multi_threaded_inference.cc)
-=======
 add_executable(mlp_csv mlp_csv.cpp)
 target_link_libraries(mlp_csv mxnet_cpp)
 
@@ -82,7 +70,6 @@ add_executable(sentiment_analysis_rnn ./inference/sentiment_analysis_rnn.cpp)
 target_link_libraries(sentiment_analysis_rnn mxnet_cpp)
 
 add_executable(multi_threaded_inference ./inference/multi_threaded_inference/multi_threaded_inference.cc)
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 target_link_libraries(multi_threaded_inference mxnet_cpp)
 
 if(MSVC)

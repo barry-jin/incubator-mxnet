@@ -55,11 +55,7 @@ def train_lenet_gluon_hybrid_export_api():
     # Save the inference output ys
     # Save the model params
 
-<<<<<<< HEAD
-    mx.npx.savez(os.path.join(get_model_path(model_name), ''.join([model_name, '-data'])), **{'data': test_data})
-=======
     mx.npx.savez(os.path.join(get_model_path(model_name), ''.join([model_name, '-data'])), {'data': test_data})
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     save_inference_results(output, model_name)
     if compare_versions(str(mxnet_version) , '1.1.0') < 0:
         # v1.0.0 does not have the epoch param in the .exports API. Hence adding this safety net

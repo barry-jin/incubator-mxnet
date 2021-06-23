@@ -9562,11 +9562,7 @@ def test_take_grads():
     loss = L2Loss()
     grads1 = run_model(model, loss, X, Y)
 
-<<<<<<< HEAD
-    # Using mx_np.slice
-=======
     # Using mx_npx.slice
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     mx.random.seed(seed)
     model2 = Model(use_take=False)
     model2.initialize()

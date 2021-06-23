@@ -129,11 +129,7 @@ class MultivariateNormal(Distribution):
         if isinstance(size, int):
             size = (size,)
         noise = np.random.normal(np.zeros_like(shape_tensor), np.ones_like(shape_tensor),
-<<<<<<< HEAD
-                                   (-2,) + size)
-=======
                                  (-2,) + size)
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         samples = self.loc + \
             np.einsum('...jk,...j->...k', self.scale_tril, noise)
         return samples
@@ -147,22 +143,14 @@ class MultivariateNormal(Distribution):
             '...i,...i->...',
             diff,
             np.einsum('...jk,...j->...k', self.precision,
-<<<<<<< HEAD
-                        diff)  # Batch matrix vector multiply
-=======
                       diff)  # Batch matrix vector multiply
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         ) * -0.5
         #   (2 * \pi)^{-k/2} * det(\Sigma)^{-1/2}
         # = det(2 * \pi * L * L.T)^{-1/2}
         # = det(\sqrt(2 * \pi) * L)^{-1}
         half_log_det = np.log(
             np.diagonal(np.sqrt(2 * math.pi) *
-<<<<<<< HEAD
-                          self.scale_tril, axis1=-2, axis2=-1)
-=======
                         self.scale_tril, axis1=-2, axis2=-1)
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         ).sum(-1)
         return M - half_log_det
 

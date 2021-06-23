@@ -36,11 +36,7 @@ MXNET_REGISTER_API("_npx.one_hot")
   op::OneHotParam param;
   // inputs
   int num_inputs = 1;
-<<<<<<< HEAD
-  NDArray* inputs[] = {args[0].operator mxnet::NDArray*()};  
-=======
   NDArray* inputs[] = {args[0].operator mxnet::NDArray*()};
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
   // depth
   param.depth = args[1].operator int64_t();
   // on_value

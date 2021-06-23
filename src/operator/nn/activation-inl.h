@@ -71,23 +71,16 @@ struct ActivationParam : public dmlc::Parameter<ActivationParam> {
   bool operator==(const ActivationParam& other) const {
     return this->act_type == other.act_type;
   }
-<<<<<<< HEAD
-
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
   std::string MXNetActType2String(int act_type) {
     switch (act_type) {
       case activation::kReLU:
         return "relu";
       case activation::kSigmoid:
         return "sigmoid";
-<<<<<<< HEAD
-=======
       case activation::kLogSigmoid:
         return "log_sigmoid";
       case activation::kMish:
         return "mish";
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
       case activation::kTanh:
         return "tanh";
       case activation::kSoftReLU:
@@ -100,10 +93,6 @@ struct ActivationParam : public dmlc::Parameter<ActivationParam> {
     LOG(FATAL) << "should not reach here ";
     return "";
   }
-<<<<<<< HEAD
-
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
   void SetAttrDict(std::unordered_map<std::string, std::string>* dict) {
     std::ostringstream act_type_s;
     act_type_s << act_type;

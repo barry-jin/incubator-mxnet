@@ -316,11 +316,7 @@ def test_fusion_different_dimensions():
     assert np.all(out.asnumpy() == np.ones((10,10)))
     assert out.shape == (10,10,1)
 
-<<<<<<< HEAD
-@mx.util.use_np
-=======
 @use_np
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 def test_input_reorder():
     class Block(gluon.HybridBlock):
         def __init__(self, **kwargs):

@@ -63,20 +63,12 @@ class Pareto(TransformedDistribution):
 
     @property
     def mean(self):
-<<<<<<< HEAD
-        a = np.clip(self.alpha, min=1)
-=======
         a = np.clip(self.alpha, 1, None)
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         return a * self.scale / (a - 1)
 
     @property
     def variance(self):
-<<<<<<< HEAD
-        a = np.clip(self.alpha, min=2)
-=======
         a = np.clip(self.alpha, 2, None)
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         return (self.scale ** 2) * a / ((a - 1) ** 2 * (a - 2))
 
     def entropy(self):

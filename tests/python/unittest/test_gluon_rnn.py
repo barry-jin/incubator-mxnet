@@ -1116,9 +1116,6 @@ def test_unroll(cell_type, num_states, layout):
         for key, val in params1.items():
             weight1 = val.data()
             weight2 = params2['cell.' + key].data()
-<<<<<<< HEAD
-=======
             # Subgraph created from npx.foreach in deferred compute is
             # little bit different from the legacy foreach operator. 
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
             assert_almost_equal(weight1, weight2, rtol=0.1, atol=0.1)

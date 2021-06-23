@@ -1941,16 +1941,6 @@ def test_npx_batch_norm(shape, fix_gamma, cudnn_off, output_mean_var):
 
 def np_softmax(x, axis=-1):
     if (x.shape[axis] == 0):
-<<<<<<< HEAD
-        return onp.sum(x, axis=axis, keepdims=True)
-    x = x - onp.max(x, axis=axis, keepdims=True)
-    x = onp.exp(x)
-    x /= onp.sum(x, axis=axis, keepdims=True)
-    return x
-
-def np_log_softmax(x, axis=-1):
-    return onp.log(np_softmax(x, axis))
-=======
         return _np.sum(x, axis=axis, keepdims=True)
     x = x - _np.max(x, axis=axis, keepdims=True)
     x = _np.exp(x)
@@ -1959,7 +1949,6 @@ def np_log_softmax(x, axis=-1):
 
 def np_log_softmax(x, axis=-1):
     return _np.log(np_softmax(x, axis))
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
 @use_np
 def test_npx_softmax():
@@ -3084,17 +3073,10 @@ def test_np_binary_funcs():
                 if isinstance(dtype, tuple):
                     assert len(dtype) == 2
                     ldtype, rdtype = dtype
-<<<<<<< HEAD
-                npldtype = ldtype if dtype != onp.float16 else onp.float32
-                nprdtype = rdtype if dtype != onp.float16 else onp.float32
-                np_test_x1 = onp.random.uniform(low, high, lshape).astype(ldtype).astype(npldtype)
-                np_test_x2 = onp.random.uniform(low, high, rshape).astype(rdtype).astype(nprdtype)
-=======
                 npldtype = ldtype if dtype != _np.float16 else _np.float32
                 nprdtype = rdtype if dtype != _np.float16 else _np.float32
                 np_test_x1 = _np.random.uniform(low, high, lshape).astype(ldtype).astype(npldtype)
                 np_test_x2 = _np.random.uniform(low, high, rshape).astype(rdtype).astype(nprdtype)
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
                 mx_test_x1 = mx.numpy.array(np_test_x1, dtype=ldtype)
                 mx_test_x2 = mx.numpy.array(np_test_x2, dtype=rdtype)
                 for hybridize in [True, False]:
@@ -3537,19 +3519,11 @@ def test_npx_relu():
 @use_np
 def test_npx_activation_mish():
     def np_mish(a):
-<<<<<<< HEAD
-        return a * onp.tanh(onp.log1p(onp.exp(a)))
-    def np_mish_grad(a):
-        softrelu = onp.log1p(onp.exp(a))
-        tanh = onp.tanh(softrelu)
-        sigmoid = onp.divide(1.0, (1.0 + onp.exp(-a)))
-=======
         return a * _np.tanh(_np.log1p(_np.exp(a)))
     def np_mish_grad(a):
         softrelu = _np.log1p(_np.exp(a))
         tanh = _np.tanh(softrelu)
         sigmoid = _np.divide(1.0, (1.0 + _np.exp(-a)))
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         return tanh + a * sigmoid * (1.0 - tanh * tanh)
 
     shape = (3, 4)
@@ -10476,400 +10450,10 @@ def test_np_apply_along_axis_fallback():
     data = np.random.randint(-100, 100, (2, 3))
     axis = 1
     func1d = lambda x: x.mean()
-<<<<<<< HEAD
-    np_y = onp.apply_along_axis(func1d, 1, data.asnumpy())
-=======
     np_y = _np.apply_along_axis(func1d, 1, data.asnumpy())
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     y1 = np.apply_along_axis(func1d, 1, data)
     y2 = np.apply_along_axis(func1d, 1, arr=data)
     assert_almost_equal(y1.asnumpy(), np_y)
     assert y1.asnumpy().dtype == np_y.dtype
     assert_almost_equal(y2.asnumpy(), np_y)
     assert y2.asnumpy().dtype == np_y.dtype
-<<<<<<< HEAD
-
-
-def check_multihead_attention_selfatt(dtype):
-    class TestSelfAtt1(mx.gluon.HybridBlock):
-        def __init__(self):
-            super().__init__()
-            self.batch_size = 2
-            self.qkv_length = 7  # length of a sequence
-            self.qkv_dim = 9     # dimension of encoding
-            self.num_heads = 3   # number of attention head
-            self.head_dim = 5    # head size
-            self.out_dim = 13 * self.num_heads
-            self.qkv_units = self.num_heads * self.head_dim
-
-            self.q_weight = Parameter('q_weight', shape=(self.qkv_units, self.qkv_dim),
-                                      init=None, dtype=dtype, allow_deferred_init=True)
-            self.k_weight = Parameter('k_weight', shape=(self.qkv_units, self.qkv_dim),
-                                      init=None, dtype=dtype, allow_deferred_init=True)
-            self.v_weight = Parameter('v_weight', shape=(self.qkv_units, self.qkv_dim),
-                                      init=None, dtype=dtype, allow_deferred_init=True)
-            self.q_bias = Parameter('q_bias', shape=(self.qkv_units,),
-                                    init=None, dtype=dtype, allow_deferred_init=True)
-            self.k_bias = Parameter('k_bias', shape=(self.qkv_units,),
-                                    init=None, dtype=dtype, allow_deferred_init=True)
-            self.v_bias = Parameter('v_bias', shape=(self.qkv_units,),
-                                    init=None, dtype=dtype, allow_deferred_init=True)                                       
-            self.out_weight = Parameter('out_weight', shape=(self.out_dim, self.qkv_units),
-                                        init=None, dtype=dtype, allow_deferred_init=True)
-            self.out_bias = Parameter('out_bias', shape=(self.out_dim,),
-                                      init=None, dtype=dtype, allow_deferred_init=True)
-
-        def forward(self, qkv):
-            ctx = qkv.ctx
-            qkv_weight = self.convert_weight(self.q_weight.data().as_in_ctx(ctx),
-                                             self.k_weight.data().as_in_ctx(ctx),
-                                             self.v_weight.data().as_in_ctx(ctx),
-                                             self.num_heads)
-            qkv_bias = self.convert_bias(self.q_bias.data().as_in_ctx(ctx),
-                                         self.k_bias.data().as_in_ctx(ctx),
-                                         self.v_bias.data().as_in_ctx(ctx),
-                                         self.num_heads)
-            qkv = np.transpose(qkv, axes=(1, 0, 2))
-            qkv_proj = npx.fully_connected(qkv, weight=qkv_weight, bias=qkv_bias, flatten=False,
-                                           num_hidden=self.qkv_units * 3, no_bias=False)
-            att_score = npx.interleaved_matmul_selfatt_qk(qkv_proj, heads=self.num_heads)
-            weighted_value = npx.interleaved_matmul_selfatt_valatt(qkv_proj, att_score, heads=self.num_heads)
-            output = npx.fully_connected(weighted_value, weight=self.out_weight.data().as_in_ctx(ctx),
-                                         bias=self.out_bias.data().as_in_ctx(ctx), flatten=False,
-                                         num_hidden=self.out_dim, no_bias=False)
-            return np.transpose(output, axes=(1, 0, 2)), att_score
-
-        def convert_weight(self, q_weight, k_weight, v_weight, num_heads):
-            q_weight = npx.reshape(q_weight, (num_heads, -1, -2), reverse=True)
-            k_weight = npx.reshape(k_weight, (num_heads, -1, -2), reverse=True)
-            v_weight = npx.reshape(v_weight, (num_heads, -1, -2), reverse=True)
-            all_weights = np.concatenate([q_weight, k_weight, v_weight], axis=-2)
-            all_weights = npx.reshape(all_weights, (-1, -2), reverse=True)
-            return all_weights
-
-        def convert_bias(self, q_bias, k_bias, v_bias, num_heads):
-            q_bias = npx.reshape(q_bias, (num_heads, -1))
-            k_bias = npx.reshape(k_bias, (num_heads, -1))
-            v_bias = npx.reshape(v_bias, (num_heads, -1))
-            all_bias = np.stack([q_bias, k_bias, v_bias], axis=1)
-            all_bias = npx.reshape(all_bias, (-1,))
-            return all_bias
-
-    class TestSelfAtt2(mx.gluon.HybridBlock):
-        def __init__(self):
-            super().__init__()
-            self.batch_size = 2
-            self.qkv_length = 7  # length of a sequence
-            self.qkv_dim = 9     # dimension of encoding
-            self.num_heads = 3   # number of attention head
-            self.head_dim = 5    # head size
-            self.out_dim = 13 * self.num_heads
-            self.qkv_units = self.num_heads * self.head_dim
-
-            self.q_weight = Parameter('q_weight', shape=(self.qkv_units, self.qkv_dim),
-                                      init=None, dtype=dtype, allow_deferred_init=True)
-            self.k_weight = Parameter('k_weight', shape=(self.qkv_units, self.qkv_dim),
-                                      init=None, dtype=dtype, allow_deferred_init=True)
-            self.v_weight = Parameter('v_weight', shape=(self.qkv_units, self.qkv_dim),
-                                      init=None, dtype=dtype, allow_deferred_init=True)
-            self.q_bias = Parameter('q_bias', shape=(self.qkv_units,),
-                                    init=None, dtype=dtype, allow_deferred_init=True)
-            self.k_bias = Parameter('k_bias', shape=(self.qkv_units,),
-                                    init=None, dtype=dtype, allow_deferred_init=True)
-            self.v_bias = Parameter('v_bias', shape=(self.qkv_units,),
-                                    init=None, dtype=dtype, allow_deferred_init=True)                                       
-            self.out_weight = Parameter('out_weight', shape=(self.out_dim, self.qkv_units),
-                                        init=None, dtype=dtype, allow_deferred_init=True)
-            self.out_bias = Parameter('out_bias', shape=(self.out_dim,),
-                                      init=None, dtype=dtype, allow_deferred_init=True)
-
-        def forward(self, qkv):
-            ctx = qkv.ctx
-            q = npx.fully_connected(qkv, weight=self.q_weight.data().as_in_ctx(ctx),
-                                    bias=self.q_bias.data().as_in_ctx(ctx), flatten=False,
-                                    num_hidden=self.qkv_units, no_bias=False)
-            k = npx.fully_connected(qkv, weight=self.k_weight.data().as_in_ctx(ctx),
-                                    bias=self.k_bias.data().as_in_ctx(ctx), flatten=False,
-                                    num_hidden=self.qkv_units, no_bias=False)
-            v = npx.fully_connected(qkv, weight=self.v_weight.data().as_in_ctx(ctx),
-                                    bias=self.v_bias.data().as_in_ctx(ctx), flatten=False,
-                                    num_hidden=self.qkv_units, no_bias=False)
-            q = npx.reshape(q, (-2, -2, self.num_heads, -1))
-            q = np.transpose(q, axes=(0, 2, 1, 3))
-            q = npx.reshape(q, (-1, -2, -2), reverse=True)
-            k = npx.reshape(k, (-2, -2, self.num_heads, -1))
-            k = np.transpose(k, axes=(0, 2, 1, 3))
-            k = npx.reshape(k, (-1, -2, -2), reverse=True)
-            q = q / np.sqrt(q.shape[-1])
-            qkv = np.transpose(qkv, axes=(1, 0, 2))
-            att_score = npx.batch_dot(q, k, transpose_b=True)
-
-            v = npx.reshape(v, (-2, -2, self.num_heads, -1))
-            v = np.transpose(v, axes=(0, 2, 1, 3))
-            v = npx.reshape(v, (-1, -2, -2), reverse=True)
-            weighted_value = npx.batch_dot(att_score, v)
-            weighted_value = npx.reshape(weighted_value, (-1, self.num_heads, -2, -2),
-                                         reverse=True)
-            weighted_value = np.transpose(weighted_value, axes=(0, 2, 1, 3))
-            weighted_value = npx.reshape(weighted_value, (-2, -2, -1))
-            output = npx.fully_connected(weighted_value, weight=self.out_weight.data().as_in_ctx(ctx),
-                                         bias=self.out_bias.data().as_in_ctx(ctx), flatten=False,
-                                         num_hidden=self.out_dim, no_bias=False)
-            return output, att_score
-
-    qkv = np.random.uniform(size=(2, 7, 9))
-    block1 = TestSelfAtt1()
-    block2 = TestSelfAtt2()
-    block1.initialize()
-    block2.initialize()
-    params1 = block1.collect_params()
-    params2 = block2.collect_params()
-    orig_params1 = copy.deepcopy(params1)
-    for key, val in orig_params1.items():
-        params2[key].set_data(copy.deepcopy(val.data()))
-    block1.hybridize()
-    block2.hybridize()
-    with mx.autograd.record():
-        out1, att_score1 = block1(qkv)
-    out1.backward()
-    with mx.autograd.record():
-        out2, att_score2 = block2(qkv)
-    out2.backward()
-    grads1 = {k : v for k, v in params1.items()}
-    grads2 = {k : v for k, v in params2.items()}
-    assert_allclose(att_score1.asnumpy(), att_score2.asnumpy(), rtol=1e-2, atol=1e-3)
-    assert_allclose(out1.asnumpy(), out2.asnumpy(), rtol=1e-2, atol=1e-3)
-
-    for k in grads1.keys():
-        assert(grads1[k].data().dtype == grads2[k].data().dtype)
-        assert(grads1[k].data().shape == grads2[k].data().shape)
-        assert_allclose(grads1[k].data().asnumpy(), grads2[k].data().asnumpy(), rtol=1e-2, atol=1e-3)
-
-
-@use_np
-@assert_raises_cuda_not_satisfied(min_version='9.1')
-@pytest.mark.serial
-def test_multihead_attention_selfatt():
-    dtypes = ['float32']
-    if mx.context.current_context().device_type == 'gpu':
-        dtypes += ['float16']
-
-    for dtype in dtypes:
-        check_multihead_attention_selfatt(dtype=dtype)
-
-
-def check_multihead_attention_encdec(dtype):
-    class TestSelfAtt1(mx.gluon.HybridBlock):
-        def __init__(self):
-            super().__init__()
-            self.batch_size = 2
-            self.qkv_length = 7  # length of a sequence
-            self.qkv_dim = 9     # dimension of encoding
-            self.num_heads = 3   # number of attention head
-            self.head_dim = 5    # head size
-            self.out_dim = 13 * self.num_heads
-            self.qkv_units = self.num_heads * self.head_dim
-
-            self.q_weight = Parameter('q_weight', shape=(self.qkv_units, self.qkv_dim),
-                                      init=None, dtype=dtype, allow_deferred_init=True)
-            self.k_weight = Parameter('k_weight', shape=(self.qkv_units, self.qkv_dim),
-                                      init=None, dtype=dtype, allow_deferred_init=True)
-            self.v_weight = Parameter('v_weight', shape=(self.qkv_units, self.qkv_dim),
-                                      init=None, dtype=dtype, allow_deferred_init=True)
-            self.q_bias = Parameter('q_bias', shape=(self.qkv_units,),
-                                    init=None, dtype=dtype, allow_deferred_init=True)
-            self.k_bias = Parameter('k_bias', shape=(self.qkv_units,),
-                                    init=None, dtype=dtype, allow_deferred_init=True)
-            self.v_bias = Parameter('v_bias', shape=(self.qkv_units,),
-                                    init=None, dtype=dtype, allow_deferred_init=True)                                       
-            self.out_weight = Parameter('out_weight', shape=(self.out_dim, self.qkv_units),
-                                        init=None, dtype=dtype, allow_deferred_init=True)
-            self.out_bias = Parameter('out_bias', shape=(self.out_dim,),
-                                      init=None, dtype=dtype, allow_deferred_init=True)
-
-        def forward(self, q, kv):
-            ctx = kv.ctx
-            kv_weight = self.convert_weight(self.k_weight.data().as_in_ctx(ctx),
-                                            self.v_weight.data().as_in_ctx(ctx),
-                                            self.num_heads)
-            kv_bias = self.convert_bias(self.k_bias.data().as_in_ctx(ctx),
-                                        self.v_bias.data().as_in_ctx(ctx),
-                                        self.num_heads)
-            kv = np.transpose(kv, axes=(1, 0, 2))
-            kv_proj = npx.fully_connected(kv, weight=kv_weight, bias=kv_bias, flatten=False,
-                                          num_hidden=self.qkv_units * 2, no_bias=False)
-            q = np.transpose(q, axes=(1, 0, 2))
-            q_proj = npx.fully_connected(q, weight=self.q_weight.data().as_in_ctx(ctx),
-                                         bias=self.q_bias.data().as_in_ctx(ctx), flatten=False,
-                                         num_hidden=self.qkv_units, no_bias=False)
-            att_score = npx.interleaved_matmul_encdec_qk(q_proj, kv_proj, heads=self.num_heads)
-            weighted_value = npx.interleaved_matmul_encdec_valatt(kv_proj, att_score, heads=self.num_heads)
-            output = npx.fully_connected(weighted_value, weight=self.out_weight.data().as_in_ctx(ctx),
-                                         bias=self.out_bias.data().as_in_ctx(ctx), flatten=False,
-                                         num_hidden=self.out_dim, no_bias=False)
-            return np.transpose(output, axes=(1, 0, 2)), att_score
-
-        def convert_weight(self, k_weight, v_weight, num_heads):
-            k_weight = npx.reshape(k_weight, (num_heads, -1, -2), reverse=True)
-            v_weight = npx.reshape(v_weight, (num_heads, -1, -2), reverse=True)
-            all_weights = np.concatenate([k_weight, v_weight], axis=-2)
-            all_weights = npx.reshape(all_weights, (-1, -2), reverse=True)
-            return all_weights
-
-        def convert_bias(self, k_bias, v_bias, num_heads):
-            k_bias = npx.reshape(k_bias, (num_heads, -1))
-            v_bias = npx.reshape(v_bias, (num_heads, -1))
-            all_bias = np.stack([k_bias, v_bias], axis=1)
-            all_bias = npx.reshape(all_bias, (-1,))
-            return all_bias
-
-    class TestSelfAtt2(mx.gluon.HybridBlock):
-        def __init__(self):
-            super().__init__()
-            self.batch_size = 2
-            self.qkv_length = 7  # length of a sequence
-            self.qkv_dim = 9     # dimension of encoding
-            self.num_heads = 3   # number of attention head
-            self.head_dim = 5    # head size
-            self.out_dim = 13 * self.num_heads
-            self.qkv_units = self.num_heads * self.head_dim
-
-            self.q_weight = Parameter('q_weight', shape=(self.qkv_units, self.qkv_dim),
-                                      init=None, dtype=dtype, allow_deferred_init=True)
-            self.k_weight = Parameter('k_weight', shape=(self.qkv_units, self.qkv_dim),
-                                      init=None, dtype=dtype, allow_deferred_init=True)
-            self.v_weight = Parameter('v_weight', shape=(self.qkv_units, self.qkv_dim),
-                                      init=None, dtype=dtype, allow_deferred_init=True)
-            self.q_bias = Parameter('q_bias', shape=(self.qkv_units,),
-                                    init=None, dtype=dtype, allow_deferred_init=True)
-            self.k_bias = Parameter('k_bias', shape=(self.qkv_units,),
-                                    init=None, dtype=dtype, allow_deferred_init=True)
-            self.v_bias = Parameter('v_bias', shape=(self.qkv_units,),
-                                    init=None, dtype=dtype, allow_deferred_init=True)                                       
-            self.out_weight = Parameter('out_weight', shape=(self.out_dim, self.qkv_units),
-                                        init=None, dtype=dtype, allow_deferred_init=True)
-            self.out_bias = Parameter('out_bias', shape=(self.out_dim,),
-                                      init=None, dtype=dtype, allow_deferred_init=True)
-
-        def forward(self, q, kv):
-            ctx = kv.ctx
-            q = npx.fully_connected(q, weight=self.q_weight.data().as_in_ctx(ctx),
-                                    bias=self.q_bias.data().as_in_ctx(ctx), flatten=False,
-                                    num_hidden=self.qkv_units, no_bias=False)
-            k = npx.fully_connected(kv, weight=self.k_weight.data().as_in_ctx(ctx),
-                                    bias=self.k_bias.data().as_in_ctx(ctx), flatten=False,
-                                    num_hidden=self.qkv_units, no_bias=False)
-            v = npx.fully_connected(kv, weight=self.v_weight.data().as_in_ctx(ctx),
-                                    bias=self.v_bias.data().as_in_ctx(ctx), flatten=False,
-                                    num_hidden=self.qkv_units, no_bias=False)
-            q = npx.reshape(q, (-2, -2, self.num_heads, -1))
-            q = np.transpose(q, axes=(0, 2, 1, 3))
-            q = npx.reshape(q, (-1, -2, -2), reverse=True)
-            k = npx.reshape(k, (-2, -2, self.num_heads, -1))
-            k = np.transpose(k, axes=(0, 2, 1, 3))
-            k = npx.reshape(k, (-1, -2, -2), reverse=True)
-            q = q / np.sqrt(q.shape[-1])
-            att_score = npx.batch_dot(q, k, transpose_b=True)
-
-            v = npx.reshape(v, (-2, -2, self.num_heads, -1))
-            v = np.transpose(v, axes=(0, 2, 1, 3))
-            v = npx.reshape(v, (-1, -2, -2), reverse=True)
-            weighted_value = npx.batch_dot(att_score, v)
-            weighted_value = npx.reshape(weighted_value, (-1, self.num_heads, -2, -2),
-                                         reverse=True)
-            weighted_value = np.transpose(weighted_value, axes=(0, 2, 1, 3))
-            weighted_value = npx.reshape(weighted_value, (-2, -2, -1))
-            output = npx.fully_connected(weighted_value, weight=self.out_weight.data().as_in_ctx(ctx),
-                                         bias=self.out_bias.data().as_in_ctx(ctx), flatten=False,
-                                         num_hidden=self.out_dim, no_bias=False)
-            return output, att_score
-
-    q = np.random.uniform(size=(2, 7, 9))
-    kv = np.random.uniform(size=(2, 7, 9))
-    block1 = TestSelfAtt1()
-    block2 = TestSelfAtt2()
-    block1.initialize()
-    block2.initialize()
-    params1 = block1.collect_params()
-    params2 = block2.collect_params()
-    orig_params1 = copy.deepcopy(params1)
-    for key, val in orig_params1.items():
-        params2[key].set_data(copy.deepcopy(val.data()))
-    block1.hybridize()
-    block2.hybridize()
-    with mx.autograd.record():
-        out1, att_score1 = block1(q, kv)
-    out1.backward()
-    with mx.autograd.record():
-        out2, att_score2 = block2(q, kv)
-    out2.backward()
-    grads1 = {k : v for k, v in params1.items()}
-    grads2 = {k : v for k, v in params2.items()}
-    assert_allclose(att_score1.asnumpy(), att_score2.asnumpy(), rtol=1e-2, atol=1e-3)
-    assert_allclose(out1.asnumpy(), out2.asnumpy(), rtol=1e-2, atol=1e-3)
-
-    for k in grads1.keys():
-        assert(grads1[k].data().dtype == grads2[k].data().dtype)
-        assert(grads1[k].data().shape == grads2[k].data().shape)
-        assert_allclose(grads1[k].data().asnumpy(), grads2[k].data().asnumpy(), rtol=1e-2, atol=1e-3)
-
-
-@use_np
-@assert_raises_cuda_not_satisfied(min_version='9.1')
-@pytest.mark.serial
-def test_multihead_attention_encdec():
-    dtypes = ['float32']
-    if mx.context.current_context().device_type == 'gpu':
-        dtypes += ['float16']
-
-    for dtype in dtypes:
-        check_multihead_attention_encdec(dtype=dtype)
-
-
-@use_np
-def test_add_n():
-    data_shape = (2, 2)
-    input_num = 5
-    data = [np.random.uniform(size=data_shape) for i in range(input_num)]
-    rslt = np.zeros(shape=data_shape)
-    for i in range(input_num):
-        rslt += data[i]
-    add_n_rslt = npx.add_n(*data, out=data[0])
-    assert_almost_equal(rslt.asnumpy(), add_n_rslt.asnumpy(), atol=1e-5)
-
-
-@use_np
-def test_slice_like():
-    for ndim in range(1, 6):
-        from_shape = onp.random.randint(1, 11, size=(ndim,))
-        shape = [s + onp.random.randint(0, 3) for s in from_shape]
-        for t in range(ndim):
-            if t > 0:
-                axes = onp.random.randint(0, ndim, size=t).tolist()
-            else:
-                axes = []
-            idx = []
-            for i in range(ndim):
-                idx.append(slice(0, shape[i]))
-                if i in axes or not axes:
-                    idx[i] = slice(0, from_shape[i])
-
-            if axes:
-                pos = onp.random.randint(0, t)
-                if axes[pos] > 0:
-                    axes[pos] -= ndim  # negative index
-            x = np.array(onp.random.normal(size=shape))
-            x1 = np.array(onp.random.normal(size=from_shape))
-            x.attach_grad()
-            x1.attach_grad()
-            with mx.autograd.record():
-                y = npx.slice_like(data=x, shape_like=x1, axes=axes)
-            y.backward()
-            assert_allclose(x.asnumpy()[idx], y.asnumpy())
-
-            xx = x.asnumpy()
-            xx[:] = 0.0
-            xx[idx] = x.asnumpy()[idx]
-            assert_allclose(x1.grad.asnumpy(), np.zeros_like(x1.grad).asnumpy())
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b

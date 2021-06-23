@@ -20,10 +20,6 @@ import mxnet as mx
 from numpy.testing import assert_allclose
 from mxnet.test_utils import *
 from mxnet.base import _as_list
-<<<<<<< HEAD
-from mxnet.attribute import AttrScope
-=======
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
 mx.npx.reset_np()
 

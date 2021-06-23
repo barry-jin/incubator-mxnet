@@ -1415,11 +1415,7 @@ class CrossEntropy(EvalMetric):
             label = label.reshape((label.size,))
             if self.from_logits:
                 pred = npx.softmax(pred, axis=self.axis)
-<<<<<<< HEAD
-            pred = npx.pick(pred.as_in_context(label.ctx), label.astype(dtype='int32'), axis=self.axis)
-=======
             pred = npx.pick(pred.as_in_ctx(label.ctx), label.astype(dtype='int32'), axis=self.axis)
->>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
             if self.ignore_label is not None:
                 ignore = (label == self.ignore_label).astype(pred.dtype)
                 num -= ignore.sum()
