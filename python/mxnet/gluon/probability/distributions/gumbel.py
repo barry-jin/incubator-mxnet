@@ -37,9 +37,6 @@ class Gumbel(Distribution):
         Location parameter of the distribution.
     scale : Tensor or scalar, default 1
         Scale parameter of the distribution
-    F : mx.ndarray or mx.symbol.numpy._Symbol or None
-        Variable recording running mode, will be automatically
-        inferred from parameters if declared None.
     """
     # pylint: disable=abstract-method
 

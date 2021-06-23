@@ -112,7 +112,10 @@ class HybridCompose(HybridSequential):
         self.hybridize()
 
 
+<<<<<<< HEAD
 #pylint: disable=W0223
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class Cast(HybridBlock):
     """Cast inputs to a specific data type
@@ -134,7 +137,11 @@ class Cast(HybridBlock):
         self._dtype = dtype
 
     def forward(self, *args):
+<<<<<<< HEAD
         return tuple([x.astype(self._dtype) for x in args])
+=======
+        return tuple(x.astype(self._dtype) for x in args)
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
 
 class RandomApply(Sequential):
@@ -193,5 +200,10 @@ class HybridRandomApply(HybridSequential):
         self.p = p
 
     def forward(self, x, *args):
+<<<<<<< HEAD
         cond = self.p < np.random.uniform(low=0, high=1, size=1)
         return npx.cond(cond, x, self.transforms(x))
+=======
+        cond = lambda p: p < np.random.uniform(low=0, high=1, size=1)
+        return npx.cond(cond, x, self.transforms(x), self.p)
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b

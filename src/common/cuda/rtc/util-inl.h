@@ -174,73 +174,96 @@ struct enable_if<true> {
 };
 
 template <typename T, typename U, class Enable = void>
-struct mixed_type;
+struct mixed_type_helper;
 
 template <typename T>
-struct mixed_type<T, float64, typename enable_if<!is_same<float64, T>::value>::type> {
+struct mixed_type_helper<T, float64, typename enable_if<!is_same<float64, T>::value>::type> {
   using type = float64;
 };
 
 template <typename T>
-struct mixed_type<float64, T> {
+struct mixed_type_helper<float64, T> {
   using type = float64;
 };
 
 template <typename T>
-struct mixed_type<T, float32, typename enable_if<!is_same<float64, T>::value &&
-                                                 !is_same<float32, T>::value>::type> {
+struct mixed_type_helper<T, float32, typename enable_if<!is_same<float64, T>::value &&
+                                                        !is_same<float32, T>::value>::type> {
   using type = float32;
 };
 
 template <typename T>
-struct mixed_type<float32, T, typename enable_if<!is_same<float64, T>::value>::type> {
+struct mixed_type_helper<float32, T, typename enable_if<!is_same<float64, T>::value>::type> {
   using type = float32;
 };
 
 template <typename T>
-struct mixed_type<T, float16, typename enable_if<is_same<float16, T>::value ||
-                                                 is_integral<T>::value>::type> {
+struct mixed_type_helper<T, float16, typename enable_if<is_same<float16, T>::value ||
+                                                        is_integral<T>::value>::type> {
   using type = float16;
 };
 
 template <typename T>
-struct mixed_type<float16, T, typename enable_if<is_integral<T>::value>::type> {
+struct mixed_type_helper<float16, T, typename enable_if<is_integral<T>::value>::type> {
   using type = float16;
 };
 
 template <typename T, typename U>
-struct mixed_type<T, U, typename enable_if<is_integral<T>::value &&
-                                           is_integral<U>::value &&
-                                           !is_same<U, bool_t>::value &&
-                                           sizeof(T) <= sizeof(U)>::type> {
+struct mixed_type_helper<T, U, typename enable_if<is_integral<T>::value &&
+                                                  is_integral<U>::value &&
+                                                  !is_same<U, bool_t>::value &&
+                                                  sizeof(T) <= sizeof(U)>::type> {
   using type = U;
 };
 
 template <typename T, typename U>
-struct mixed_type<U, T, typename enable_if<is_integral<T>::value &&
-                                           is_integral<U>::value &&
-                                           !is_same<U, bool_t>::value &&
-                                           sizeof(T) < sizeof(U)>::type> {
+struct mixed_type_helper<U, T, typename enable_if<is_integral<T>::value &&
+                                                  is_integral<U>::value &&
+                                                  !is_same<U, bool_t>::value &&
+                                                  sizeof(T) < sizeof(U)>::type> {
   using type = U;
 };
 
 template <typename T>
-struct mixed_type<T, bool_t, typename enable_if<is_integral<T>::value &&
-                                                sizeof(T) < sizeof(bool_t)>::type> {
+struct mixed_type_helper<T, bool_t, typename enable_if<is_integral<T>::value &&
+                                                       sizeof(T) < sizeof(bool_t)>::type> {
   using type = index_t;
 };
 
 template <typename T>
-struct mixed_type<bool_t, T, typename enable_if<is_integral<T>::value &&
-                                                sizeof(T) < sizeof(bool_t)>::type> {
+struct mixed_type_helper<bool_t, T, typename enable_if<is_integral<T>::value &&
+                                                       sizeof(T) < sizeof(bool_t)>::type> {
   using type = index_t;
 };
 
 template <typename T>
-struct mixed_type<T, bool_t, typename enable_if<is_integral<T>::value &&
-                                                sizeof(T) == sizeof(bool_t)>::type> {
+struct mixed_type_helper<T, bool_t, typename enable_if<is_integral<T>::value &&
+                                                       sizeof(T) == sizeof(bool_t)>::type> {
   using type = T;
 };
+
+template <typename... Ts>
+struct multi_mixed_type_helper;
+
+template <>
+struct multi_mixed_type_helper<> {
+    using type = void;
+};
+
+template <typename T>
+struct multi_mixed_type_helper<T> {
+    using type = T;
+};
+
+template <typename T, typename U, typename... Ts>
+struct multi_mixed_type_helper<T, U, Ts...> {
+    using type = typename mixed_type_helper<T,
+                                            typename multi_mixed_type_helper<U,
+                                                                             Ts...>::type>::type;
+};
+
+template <typename... Ts>
+using mixed_type = typename multi_mixed_type_helper<Ts...>::type;
 
 }  // namespace type_util
 )code";
@@ -254,6 +277,7 @@ enum class OpReqType {
 };
 
 constexpr int kRTCMaxThreadsPerBlock = 512;
+constexpr int warp_size = 32;
 
 namespace util {
 
@@ -377,7 +401,188 @@ __device__ inline bool isnan(volatile const float16 &val) {
   return ::isnan(__half2float(const_cast<const float16&>(val)));
 }
 
+template <int NVALUES = warp_size, typename OP, typename T>
+__device__ inline T warp_reduce(T value, OP redfun) {
+#pragma unroll
+  for (int i = warp_size / 2; i >= 1; i /= 2) {
+    if (NVALUES > i) value = redfun(value, __shfl_down_sync(0xffffffff, value, i));
+  }
+  return value;
+}
+
+template <typename OP, typename T>
+__device__ inline T grouped_warp_reduce(T value, OP redfun, const int group_size) {
+  for (int i = 1; i < group_size; i *= 2) {
+    value = redfun(value, __shfl_down_sync(0xffffffff, value, i));
+  }
+  return value;
+}
+
+template <typename OP, typename T>
+__device__ inline T grouped_warp_allreduce(T value, OP redfun, const int group_size) {
+  value = grouped_warp_reduce(value, redfun, group_size);
+  return __shfl_sync(0xffffffff, value, 0, group_size);
+}
+
+template <typename OP, typename T>
+__device__ inline T strided_grouped_warp_reduce(T value, OP redfun, const int group_size) {
+  for (int i = warp_size / 2; i >= group_size; i /= 2) {
+    value = redfun(value, __shfl_down_sync(0xffffffff, value, i));
+  }
+  return value;
+}
+
+template <typename OP, typename T>
+__device__ inline T strided_grouped_warp_allreduce(T value, OP redfun, const int group_size) {
+  value = strided_grouped_warp_reduce(value, redfun, group_size);
+  for (int i = group_size; i < warp_size; i *= 2) {
+    T tmp = __shfl_up_sync(0xffffffff, value, i);
+    if (threadIdx.x % warp_size >= i) {
+      value = tmp;
+    }
+  }
+  return value;
+}
+
 }  // namespace util
+)code";
+
+const char limits[] = R"code(
+constexpr double DBL_MAX = 1.7976931348623157081e+308;
+constexpr float FLT_MAX = 3.4028234663852885981e+38;
+#define inf ((float)1e50)
+#define nan (inf - inf)
+
+namespace limits {
+
+template<typename DType>
+__device__ inline DType MinValue(void);
+
+template<>
+__device__ inline float MinValue<float>(void) {
+  return -FLT_MAX;
+}
+/*! \brief minimum value of double */
+template<>
+__device__ inline double MinValue<double>(void) {
+  return -DBL_MAX;
+}
+/*! \brief minimum value of uint8 */
+template<>
+__device__ inline uint8 MinValue<uint8>(void) {
+  return 0;
+}
+/*! \brief minimum value of int8_t */
+template<>
+__device__ inline int8 MinValue<int8>(void) {
+  return -128;
+}
+/*! \brief minimum value of int32 */
+template<>
+__device__ inline int32 MinValue<int32>(void) {
+  return -2147483648;
+}
+/*! \brief minimum value of int64_t */
+template<>
+__device__ inline int64 MinValue<int64>(void) {
+  return -9223372036854775808LL;
+}
+/*! \brief minimum value of bool */
+template<>
+__device__ inline bool MinValue<bool>(void) {
+  return false;
+}
+/*! \brief minimum value of bool_t */
+template<>
+__device__ inline bool_t MinValue<bool_t>(void) {
+  return MinValue<index_t>();
+}
+
+/*!
+ * \brief negative infinity of certain types
+ * \tparam DType data type
+ */
+template<typename DType>
+__device__ inline DType NegInfValue(void) {
+  return MinValue<DType>();
+}
+/*! \brief negative infinity value of float */
+template<>
+__device__ inline float NegInfValue<float>(void) {
+  return -inf;
+}
+/*! \brief negative infinity value of double */
+template<>
+__device__ inline double NegInfValue<double>(void) {
+  return -inf;
+}
+
+/*!
+ * \brief maximum value of certain types
+ * \tparam DType data type
+ */
+template<typename DType>
+__device__ inline DType MaxValue(void);
+/*! \brief maximum value of float */
+template<>
+__device__ inline float MaxValue<float>(void) {
+  return FLT_MAX;
+}
+/*! \brief maximum value of double */
+template<>
+__device__ inline double MaxValue<double>(void) {
+  return DBL_MAX;
+}
+/*! \brief maximum value of uint8 */
+template<>
+__device__ inline uint8 MaxValue<uint8>(void) {
+  return 255;
+}
+/*! \brief maximum value of int8 */
+template<>
+__device__ inline int8 MaxValue<int8>(void) {
+  return 127;
+}
+/*! \brief maximum value of int32 */
+template<>
+__device__ inline int32 MaxValue<int32>(void) {
+  return 2147483647;
+}
+/*! \brief maximum value of int64 */
+template<>
+__device__ inline int64 MaxValue<int64>(void) {
+  return 9223372036854775807LL;
+}
+/*! \brief maximum value of bool */
+template<>
+__device__ inline bool MaxValue<bool>(void) {
+  return true;
+}
+/*! \brief maximum value of bool_t */
+template<>
+__device__ inline bool_t MaxValue<bool_t>(void) {
+  return MaxValue<index_t>();
+}
+/*!
+ * \brief positive infinity of certain types
+ * \tparam DType data type
+ */
+template<typename DType>
+__device__ inline DType PosInfValue(void) {
+  return MaxValue<DType>();
+}
+/*! \brief positive infinity value of float */
+template<>
+__device__ inline float PosInfValue<float>(void) {
+  return inf;
+}
+/*! \brief positive infinity value of double */
+template<>
+__device__ inline double PosInfValue<double>(void) {
+  return inf;
+}
+
+}  // namespace limits
 )code";
 }  // namespace rtc
 }  // namespace cuda

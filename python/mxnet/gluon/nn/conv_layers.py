@@ -29,12 +29,19 @@ __all__ = ['Conv1D', 'Conv2D', 'Conv3D',
 
 from ..block import HybridBlock
 from ..parameter import Parameter
+<<<<<<< HEAD
 from ... import nd, np, npx
+=======
+from ... import np, npx
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 from ...base import numeric_types
 from .activations import Activation
 from ...util import use_np
 
+<<<<<<< HEAD
 #pylint: disable=W0223
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class _Conv(HybridBlock):
     """Abstract nD convolution layer (private, used as implementation base).
@@ -740,7 +747,10 @@ class Conv3DTranspose(_Conv):
         self.outpad = output_padding
 
 
+<<<<<<< HEAD
 #pylint: disable=W0223
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class _Pooling(HybridBlock):
     """Abstract class for different pooling layers."""
@@ -1249,7 +1259,10 @@ class GlobalAvgPool3D(_Pooling):
             (1, 1, 1), None, 0, True, True, 'avg', layout, **kwargs)
 
 
+<<<<<<< HEAD
 #pylint: disable=W0223
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class ReflectionPad2D(HybridBlock):
     r"""Pads the input tensor using the reflection of the input boundary.
@@ -1276,7 +1289,7 @@ class ReflectionPad2D(HybridBlock):
     Examples
     --------
     >>> m = nn.ReflectionPad2D(3)
-    >>> input = mx.nd.random.normal(shape=(16, 3, 224, 224))
+    >>> input = mx.np.random.normal(size=(16, 3, 224, 224))
     >>> output = m(input)
     """
     def __init__(self, padding=0, **kwargs):
@@ -1294,7 +1307,10 @@ class ReflectionPad2D(HybridBlock):
         return npx.pad(x, mode='reflect', pad_width=self._padding)
 
 
+<<<<<<< HEAD
 #pylint: disable=W0223
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class DeformableConvolution(HybridBlock):
     """2-D Deformable Convolution v_1 (Dai, 2017).
@@ -1519,7 +1535,10 @@ class DeformableConvolution(HybridBlock):
                         **self._kwargs_deformable_conv)
 
 
+<<<<<<< HEAD
 #pylint: disable=W0223
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class ModulatedDeformableConvolution(HybridBlock):
     """2-D Deformable Convolution v2 (Dai, 2018).
@@ -1726,7 +1745,10 @@ class ModulatedDeformableConvolution(HybridBlock):
         return 'modulated_deformable_conv'
 
 
+<<<<<<< HEAD
 #pylint: disable=W0223
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class PixelShuffle1D(HybridBlock):
 
@@ -1754,7 +1776,7 @@ class PixelShuffle1D(HybridBlock):
     Examples
     --------
     >>> pxshuf = PixelShuffle1D(2)
-    >>> x = mx.nd.zeros((1, 8, 3))
+    >>> x = mx.np.zeros((1, 8, 3))
     >>> pxshuf(x).shape
     (1, 4, 6)
     """
@@ -1775,7 +1797,10 @@ class PixelShuffle1D(HybridBlock):
         return "{}({})".format(self.__class__.__name__, self._factor)
 
 
+<<<<<<< HEAD
 #pylint: disable=W0223
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class PixelShuffle2D(HybridBlock):
 
@@ -1812,7 +1837,7 @@ class PixelShuffle2D(HybridBlock):
     Examples
     --------
     >>> pxshuf = PixelShuffle2D((2, 3))
-    >>> x = mx.nd.zeros((1, 12, 3, 5))
+    >>> x = mx.np.zeros((1, 12, 3, 5))
     >>> pxshuf(x).shape
     (1, 2, 6, 15)
     """
@@ -1839,7 +1864,10 @@ class PixelShuffle2D(HybridBlock):
         return "{}({})".format(self.__class__.__name__, self._factors)
 
 
+<<<<<<< HEAD
 #pylint: disable=W0223
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class PixelShuffle3D(HybridBlock):
 
@@ -1876,7 +1904,7 @@ class PixelShuffle3D(HybridBlock):
     Examples
     --------
     >>> pxshuf = PixelShuffle3D((2, 3, 4))
-    >>> x = mx.nd.zeros((1, 48, 3, 5, 7))
+    >>> x = mx.np.zeros((1, 48, 3, 5, 7))
     >>> pxshuf(x).shape
     (1, 2, 6, 15, 28)
     """

@@ -221,7 +221,11 @@ int main(int argc, char const *argv[]) {
   int num_gpu;
   MXGetGPUCount(&num_gpu);
   int batch_size = 32;
+<<<<<<< HEAD
 #if !MXNET_USE_CPU
+=======
+#if MXNET_USE_CUDA
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
   if (num_gpu > 0) {
     ctx = Context::gpu();
     batch_size = 256;
@@ -251,6 +255,7 @@ int main(int argc, char const *argv[]) {
   /*if fine tune from some pre-trained model, we should load the parameters*/
   // NDArray::Load("./model/alex_params_3", nullptr, &args_map);
   /*else, we should use initializer Xavier to init the params*/
+<<<<<<< HEAD
   // auto initializer = Uniform(0.01);
   // for (auto& arg : args_map) {
   //   // arg.first is parameter name, and arg.second is the value
@@ -263,6 +268,13 @@ int main(int argc, char const *argv[]) {
      * initializer to call*/
     xavier(arg.first, &arg.second);
     // std::cout << arg.second << std::endl;
+=======
+  auto initializer = Uniform(0.07);
+  for (auto &arg : args_map) {
+    /*be careful here, the arg's name must has some specific ends or starts for
+     * initializer to call*/
+    initializer(arg.first, &arg.second);
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
   }
 
   /*these binary files should be generated using im2rc tools, which can be found
@@ -273,7 +285,11 @@ int main(int argc, char const *argv[]) {
                                 "./data/mnist_data/t10k-labels-idx1-ubyte"
                               };
 
+<<<<<<< HEAD
   auto train_iter = MXDataIter("MNISTIter");
+=======
+  auto train_iter =  MXDataIter("MNISTIter");
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
   if (!setDataIter(&train_iter, "Train", data_files, batch_size)) {
     return 1;
   }

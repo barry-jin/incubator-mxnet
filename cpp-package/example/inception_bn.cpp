@@ -166,7 +166,11 @@ int main(int argc, char const *argv[]) {
   auto ctx = Context::cpu();
   int num_gpu;
   MXGetGPUCount(&num_gpu);
+<<<<<<< HEAD
 #if USE_CUDA
+=======
+#if MXNET_USE_CUDA
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
   if (num_gpu > 0) {
     ctx = Context::gpu();
   }
@@ -200,9 +204,15 @@ int main(int argc, char const *argv[]) {
   }
 
   // initialize parameters
+<<<<<<< HEAD
   Xavier xavier = Xavier(Xavier::gaussian, Xavier::in, 2);
   for (auto &arg : args_map) {
     xavier(arg.first, &arg.second);
+=======
+  auto initializer = Uniform(0.07);
+  for (auto& arg : args_map) {
+    initializer(arg.first, &arg.second);
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
   }
 
   Optimizer* opt = OptimizerRegistry::Find("sgd");

@@ -288,10 +288,12 @@ FP32_FUNCS = [
     'hard_sigmoid',
     'identity',
     'logical_not',
+    'log_sigmoid'
     'max_axis',
     'max',
     'min',
     'min_axis',
+    'mish',
     'mp_sgd_mom_update',
     'mp_sgd_update',
     'multi_all_finite',

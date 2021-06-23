@@ -31,6 +31,10 @@
 #include <map>
 #include <set>
 #include <string>
+<<<<<<< HEAD
+=======
+#include <algorithm>
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 #include "mxnet-cpp/base.h"
 #include "mxnet-cpp/symbol.h"
 
@@ -110,7 +114,10 @@ class Executor {
       for (const auto &array : outputs) {
         out_handles.push_back(array.GetHandle());
       }
+<<<<<<< HEAD
                           
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
       std::vector<NDArrayHandle> head_grads_;
       for (auto d : head_grads) {
         head_grads_.push_back(d.GetHandle());
@@ -128,7 +135,11 @@ class Executor {
       grad_arrays.reserve(arg_arrays.size());
       for (const auto &array : arg_arrays) {
         NDArrayHandle grad;
+<<<<<<< HEAD
         CHECK_EQ(MXNDArrayGetGrad(array.GetHandle(), &grad),0);
+=======
+        CHECK_EQ(MXNDArrayGetGrad(array.GetHandle(), &grad), 0);
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         grad_arrays.push_back(NDArray(grad));
       }
     }

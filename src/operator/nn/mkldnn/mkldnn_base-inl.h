@@ -168,12 +168,12 @@ static inline bool SupportMKLDNN(const NDArray &input) {
 }
 
 static inline bool MKLDNNEnvSet() {
-  static bool is_mkldnn_enabled = dmlc::GetEnv("MXNET_MKLDNN_ENABLED", true);
+  static bool is_mkldnn_enabled = dmlc::GetEnv("MXNET_ONEDNN_ENABLED", true);
   return is_mkldnn_enabled;
 }
 
 static inline int GetMKLDNNCacheSize() {
-  static int mkldnn_cache_size = dmlc::GetEnv("MXNET_MKLDNN_CACHE_NUM", -1);
+  static int mkldnn_cache_size = dmlc::GetEnv("MXNET_ONEDNN_CACHE_NUM", -1);
   return mkldnn_cache_size;
 }
 
@@ -684,7 +684,7 @@ bool MKLDNNStorageType(const nnvm::NodeAttrs &attrs,
                        std::vector<int> *out_attrs);
 
 #define MKLDNN_OPCHECK_INIT(backward, num_checks, inputs, outputs)  \
-    static bool debug = dmlc::GetEnv("MXNET_MKLDNN_DEBUG", false);  \
+    static bool debug = dmlc::GetEnv("MXNET_ONEDNN_DEBUG", false);  \
     OpCheck check(backward, num_checks);                            \
     if (debug) check.Init(inputs, outputs);
 

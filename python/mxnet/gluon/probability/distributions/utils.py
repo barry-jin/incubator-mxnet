@@ -18,7 +18,7 @@
 # coding: utf-8
 # pylint: disable=wildcard-import
 """Distribution utilities"""
-__all__ = ['getF', 'prob2logit', 'logit2prob', 'cached_property', 'sample_n_shape_converter',
+__all__ = ['prob2logit', 'logit2prob', 'cached_property', 'sample_n_shape_converter',
            'constraint_check', 'digamma', 'gammaln', 'erfinv', 'erf']
 
 from functools import update_wrapper
@@ -28,8 +28,11 @@ try:
     import scipy.special as sc
 except ImportError:
     sc = None
+<<<<<<< HEAD
 from .... import symbol as sym
 from .... import ndarray as nd
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 from .... import np, npx
 
 
@@ -113,33 +116,6 @@ def sample_n_shape_converter(size):
             size = (size,)
         size = (-2,) + size
     return size
-
-
-def getF(*params):
-    """Get running mode from parameters,
-    return mx.ndarray if inputs are python scalar.
-
-    Returns
-    -------
-    ndarray or _Symbol
-        the running mode inferred from `*params`
-    """
-    mode_flag = 0
-    for param in params:
-        if isinstance(param, nd.NDArray):
-            if mode_flag < 0:
-                raise TypeError("Expect parameters to have consistent running mode," +
-                                " got {}".format([type(p) for p in params]))
-            mode_flag = 1
-        elif isinstance(param, sym.Symbol):
-            if mode_flag > 0:
-                raise TypeError("Expect parameters to have consistent running mode," +
-                                " got {}".format([type(p) for p in params]))
-            mode_flag = -1
-    # In case of scalar params, we choose to use the imperative mode.
-    if mode_flag < 0:
-        return sym
-    return nd
 
 
 def sum_right_most(x, ndim):

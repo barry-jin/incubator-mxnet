@@ -24,6 +24,7 @@ from mxnet.base import MXNetError
 from mxnet.test_utils import assert_exception, default_context, set_default_context, use_np
 import pytest
 
+mx.npx.reset_np()
 
 @pytest.mark.skipif(os.environ.get('MXNET_ENGINE_TYPE') == 'NaiveEngine',
                     reason="This test assumes asynchronous execution.")
@@ -75,6 +76,7 @@ def test_exc_symbolic():
     pytest.raises(MXNetError, symbolic, exec_backward=False, waitall=True)
     pytest.raises(MXNetError, symbolic, exec_backward=True, waitall=True)
 
+<<<<<<< HEAD
 @pytest.mark.skipif(os.environ.get('MXNET_ENGINE_TYPE') == 'NaiveEngine',
                     reason="This test assumes asynchronous execution.")
 def test_exc_gluon():
@@ -94,6 +96,8 @@ def test_exc_gluon():
     gluon(exec_wait=False)
     gluon(exec_wait=True)
     gluon(waitall=True)
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
 def test_exc_multiple_waits():
     def multiple_waits(waitall=False):

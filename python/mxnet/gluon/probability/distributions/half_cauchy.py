@@ -38,9 +38,6 @@ class HalfCauchy(TransformedDistribution):
     ----------
     scale : Tensor or scalar, default 1
         Scale of the full Cauchy distribution.
-    F : mx.ndarray or mx.symbol.numpy._Symbol or None
-        Variable recording running mode, will be automatically
-        inferred from parameters if declared None.
     """
     # pylint: disable=abstract-method
 

@@ -217,6 +217,11 @@ def activation(data, act_type='relu', **kwargs):
 
     The following activation functions are supported:
 
+<<<<<<< HEAD
+=======
+    - `log_sigmoid`: :math:`y = log(\frac{1}{1 + exp(-x)})`
+    - `mish`: :math:`y = x * tanh(log(1 + exp(x)))`
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     - `relu`: Rectified Linear Unit, :math:`y = max(x, 0)`
     - `sigmoid`: :math:`y = \frac{1}{1 + exp(-x)}`
     - `tanh`: Hyperbolic tangent, :math:`y = \frac{exp(x) - exp(-x)}{exp(x) + exp(-x)}`
@@ -227,7 +232,11 @@ def activation(data, act_type='relu', **kwargs):
     ----------
     data : NDArray
         The input array.
+<<<<<<< HEAD
     act_type : {'relu', 'sigmoid', 'softrelu', 'softsign', 'tanh'}, required
+=======
+    act_type : {'log_sigmoid', 'mish', 'relu', 'sigmoid', 'softrelu', 'softsign', 'tanh'}, required
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         Activation function to be applied.
 
     Returns
@@ -397,6 +406,7 @@ def fully_connected(x, weight, bias=None, num_hidden=None,
         The output of this function.
     """
     assert num_hidden is not None, "Please provide number of hidden nodes"
+<<<<<<< HEAD
     if bias is not None:
         return _api_internal.fully_connected(x, weight, bias, num_hidden,
                                              False, flatten)
@@ -406,6 +416,14 @@ def fully_connected(x, weight, bias=None, num_hidden=None,
         assert bias is not None, "Missing bias parameter"
         return _api_internal.fully_connected(x, weight, bias, num_hidden,
                                              False, flatten)
+=======
+    if no_bias:
+        return _api_internal.fully_connected(x, weight, num_hidden, no_bias, flatten)
+    else:
+        assert bias is not None, "Missing bias parameter"
+        return _api_internal.fully_connected(x, weight, bias, num_hidden,
+                                             no_bias, flatten)
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
 
 # pylint: disable=too-many-arguments

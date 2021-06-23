@@ -1941,6 +1941,7 @@ def test_npx_batch_norm(shape, fix_gamma, cudnn_off, output_mean_var):
 
 def np_softmax(x, axis=-1):
     if (x.shape[axis] == 0):
+<<<<<<< HEAD
         return onp.sum(x, axis=axis, keepdims=True)
     x = x - onp.max(x, axis=axis, keepdims=True)
     x = onp.exp(x)
@@ -1949,6 +1950,16 @@ def np_softmax(x, axis=-1):
 
 def np_log_softmax(x, axis=-1):
     return onp.log(np_softmax(x, axis))
+=======
+        return _np.sum(x, axis=axis, keepdims=True)
+    x = x - _np.max(x, axis=axis, keepdims=True)
+    x = _np.exp(x)
+    x /= _np.sum(x, axis=axis, keepdims=True)
+    return x
+
+def np_log_softmax(x, axis=-1):
+    return _np.log(np_softmax(x, axis))
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
 @use_np
 def test_npx_softmax():
@@ -2011,6 +2022,65 @@ def np_masked_log_softmax(data, mask, axis=-1, temperature=1.0):
         neg = -1e4
     data = onp.where(mask, data, neg)
     return onp.where(mask, np_log_softmax(data, axis=axis) / temperature, -onp.inf)
+
+@use_np
+@pytest.mark.parametrize('hybridize', [True, False])
+@pytest.mark.parametrize('shape', [(3, 0, 4), (0, 0)])
+def test_npx_masked_softmax(hybridize, shape):
+    class TestMaskedSoftmax(HybridBlock):
+        def __init__(self, axis):
+            super(TestMaskedSoftmax, self).__init__()
+            self._axis = axis
+
+        def forward(self, a, mask):
+            return npx.masked_softmax(a, mask, axis=self._axis)
+
+    class TestMaskedLogSoftmax(HybridBlock):
+        def __init__(self, axis):
+            super(TestMaskedLogSoftmax, self).__init__()
+            self._axis = axis
+
+        def forward(self, a, mask):
+            return npx.masked_log_softmax(a, mask, axis=self._axis)
+
+    #(operator, function) tuples
+    tested_ops = [(TestMaskedSoftmax, np_masked_softmax),
+                  (TestMaskedLogSoftmax, np_masked_log_softmax)]
+
+    # only testing 0-size shaped inputs here, other input cases have been tested in test_opeartor.py
+    for SoftmaxOp, softmax_function in tested_ops:
+        mx_a = np.random.uniform(size=shape)
+        mask = np.random.randint(0, 2, shape)
+        mx_a.attach_grad()
+        mask.attach_grad()
+        for axis in range(-len(shape), len(shape)):
+            test_softmax_op = SoftmaxOp(axis)
+            if hybridize:
+                test_softmax_op.hybridize()
+
+            with mx.autograd.record():
+                mx_out = test_softmax_op(mx_a, mask)
+
+            mx_out.wait_to_read()
+
+            np_out = softmax_function(mx_a.asnumpy(), mask.asnumpy(), axis)
+            assert_almost_equal(mx_out.asnumpy(), np_out, rtol=1e-3, atol=1e-5, equal_nan=True)
+
+
+def np_masked_softmax(data, mask, axis=-1, temperature=1.0):
+    neg = -1e18
+    if data.dtype == _np.float16:
+        neg = -1e4
+    temp = _np.where(mask, data, neg)
+    result = (np_softmax(temp, axis=axis) / temperature) * mask
+    return result
+
+def np_masked_log_softmax(data, mask, axis=-1, temperature=1.0):
+    neg = -1e18
+    if data.dtype == _np.float16:
+        neg = -1e4
+    data = _np.where(mask, data, neg)
+    return _np.where(mask, np_log_softmax(data, axis=axis) / temperature, -_np.inf)
 
 @use_np
 @pytest.mark.parametrize('hybridize', [True, False])
@@ -3014,10 +3084,17 @@ def test_np_binary_funcs():
                 if isinstance(dtype, tuple):
                     assert len(dtype) == 2
                     ldtype, rdtype = dtype
+<<<<<<< HEAD
                 npldtype = ldtype if dtype != onp.float16 else onp.float32
                 nprdtype = rdtype if dtype != onp.float16 else onp.float32
                 np_test_x1 = onp.random.uniform(low, high, lshape).astype(ldtype).astype(npldtype)
                 np_test_x2 = onp.random.uniform(low, high, rshape).astype(rdtype).astype(nprdtype)
+=======
+                npldtype = ldtype if dtype != _np.float16 else _np.float32
+                nprdtype = rdtype if dtype != _np.float16 else _np.float32
+                np_test_x1 = _np.random.uniform(low, high, lshape).astype(ldtype).astype(npldtype)
+                np_test_x2 = _np.random.uniform(low, high, rshape).astype(rdtype).astype(nprdtype)
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
                 mx_test_x1 = mx.numpy.array(np_test_x1, dtype=ldtype)
                 mx_test_x2 = mx.numpy.array(np_test_x2, dtype=rdtype)
                 for hybridize in [True, False]:
@@ -3460,11 +3537,19 @@ def test_npx_relu():
 @use_np
 def test_npx_activation_mish():
     def np_mish(a):
+<<<<<<< HEAD
         return a * onp.tanh(onp.log1p(onp.exp(a)))
     def np_mish_grad(a):
         softrelu = onp.log1p(onp.exp(a))
         tanh = onp.tanh(softrelu)
         sigmoid = onp.divide(1.0, (1.0 + onp.exp(-a)))
+=======
+        return a * _np.tanh(_np.log1p(_np.exp(a)))
+    def np_mish_grad(a):
+        softrelu = _np.log1p(_np.exp(a))
+        tanh = _np.tanh(softrelu)
+        sigmoid = _np.divide(1.0, (1.0 + _np.exp(-a)))
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         return tanh + a * sigmoid * (1.0 - tanh * tanh)
 
     shape = (3, 4)
@@ -10391,13 +10476,18 @@ def test_np_apply_along_axis_fallback():
     data = np.random.randint(-100, 100, (2, 3))
     axis = 1
     func1d = lambda x: x.mean()
+<<<<<<< HEAD
     np_y = onp.apply_along_axis(func1d, 1, data.asnumpy())
+=======
+    np_y = _np.apply_along_axis(func1d, 1, data.asnumpy())
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     y1 = np.apply_along_axis(func1d, 1, data)
     y2 = np.apply_along_axis(func1d, 1, arr=data)
     assert_almost_equal(y1.asnumpy(), np_y)
     assert y1.asnumpy().dtype == np_y.dtype
     assert_almost_equal(y2.asnumpy(), np_y)
     assert y2.asnumpy().dtype == np_y.dtype
+<<<<<<< HEAD
 
 
 def check_multihead_attention_selfatt(dtype):
@@ -10781,3 +10871,5 @@ def test_slice_like():
             xx[:] = 0.0
             xx[idx] = x.asnumpy()[idx]
             assert_allclose(x1.grad.asnumpy(), np.zeros_like(x1.grad).asnumpy())
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b

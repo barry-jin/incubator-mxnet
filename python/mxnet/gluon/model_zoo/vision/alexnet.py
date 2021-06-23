@@ -29,7 +29,10 @@ from .... import base
 from ....util import use_np
 
 # Net
+<<<<<<< HEAD
 # pylint: disable=W0223
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class AlexNet(HybridBlock):
     r"""AlexNet model from the `"One weird trick..." <https://arxiv.org/abs/1404.5997>`_ paper.

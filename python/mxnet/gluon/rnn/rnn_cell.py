@@ -26,7 +26,10 @@ __all__ = ['RecurrentCell', 'HybridRecurrentCell',
            'ModifierCell', 'ZoneoutCell', 'ResidualCell',
            'BidirectionalCell', 'VariationalDropoutCell', 'LSTMPCell']
 
+<<<<<<< HEAD
 import gc
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 from ... import np, npx, context
 from ...util import use_np
 from ...base import string_types, numeric_types, _as_list
@@ -390,7 +393,11 @@ class RNNCell(HybridRecurrentCell):
                                   bias=self.i2h_bias.data(ctx),
                                   num_hidden=self._hidden_size,
                                   no_bias=False)
+<<<<<<< HEAD
         h2h = npx.fully_connected(states[0].as_in_context(ctx),
+=======
+        h2h = npx.fully_connected(states[0].as_in_ctx(ctx),
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
                                   weight=self.h2h_weight.data(ctx),
                                   bias=self.h2h_bias.data(ctx),
                                   num_hidden=self._hidden_size,
@@ -408,8 +415,13 @@ class RNNCell(HybridRecurrentCell):
             if is_bidirect:
                 nh *= 2
             self.i2h_weight.shape = (self._hidden_size, nh)
+<<<<<<< HEAD
 
 
+=======
+
+
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class LSTMCell(HybridRecurrentCell):
     r"""Long-Short Term Memory (LSTM) network cell.
@@ -512,7 +524,11 @@ class LSTMCell(HybridRecurrentCell):
         i2h = npx.fully_connected(inputs, weight=self.i2h_weight.data(ctx),
                                   bias=self.i2h_bias.data(ctx),
                                   num_hidden=self._hidden_size*4, no_bias=False)
+<<<<<<< HEAD
         h2h = npx.fully_connected(states[0].as_in_context(ctx),
+=======
+        h2h = npx.fully_connected(states[0].as_in_ctx(ctx),
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
                                   weight=self.h2h_weight.data(ctx),
                                   bias=self.h2h_bias.data(ctx),
                                   num_hidden=self._hidden_size*4, no_bias=False)
@@ -522,7 +538,11 @@ class LSTMCell(HybridRecurrentCell):
         forget_gate = self._get_activation(slice_gates[1], self._recurrent_activation)
         in_transform = self._get_activation(slice_gates[2], self._activation)
         out_gate = self._get_activation(slice_gates[3], self._recurrent_activation)
+<<<<<<< HEAD
         next_c = np.multiply(forget_gate, states[1].as_in_context(ctx)) + \
+=======
+        next_c = np.multiply(forget_gate, states[1].as_in_ctx(ctx)) + \
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
                  np.multiply(in_gate, in_transform)
         next_h = np.multiply(out_gate, npx.activation(next_c, act_type=self._activation))
 
@@ -632,7 +652,11 @@ class GRUCell(HybridRecurrentCell):
     def forward(self, inputs, states):
         # pylint: disable=too-many-locals
         ctx = inputs.ctx
+<<<<<<< HEAD
         prev_state_h = states[0].as_in_context(ctx)
+=======
+        prev_state_h = states[0].as_in_ctx(ctx)
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         i2h = npx.fully_connected(inputs,
                                   weight=self.i2h_weight.data(ctx),
                                   bias=self.i2h_bias.data(ctx),
@@ -750,8 +774,13 @@ class SequentialRNNCell(RecurrentCell):
     def infer_shape(self, _, x, is_bidirect):
         for i, child in enumerate(self._layers):
             child.infer_shape(i, x, is_bidirect)
+<<<<<<< HEAD
 
 
+=======
+
+
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class HybridSequentialRNNCell(HybridRecurrentCell):
     """Sequentially stacking multiple HybridRNN cells."""
@@ -833,8 +862,13 @@ class HybridSequentialRNNCell(HybridRecurrentCell):
     def infer_shape(self, _, x, is_bidirect):
         for i, child in enumerate(self._layers):
             child.infer_shape(i, x, False)
+<<<<<<< HEAD
 
 
+=======
+
+
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class DropoutCell(HybridRecurrentCell):
     """Applies dropout on input.
@@ -971,7 +1005,11 @@ class ZoneoutCell(ModifierCell):
 
         output = (np.where(mask(p_outputs, next_output), next_output, prev_output)
                   if p_outputs != 0. else next_output)
+<<<<<<< HEAD
         states = ([np.where(mask(p_states, new_s), new_s, old_s.as_in_context(ctx)) for new_s, old_s in
+=======
+        states = ([np.where(mask(p_states, new_s), new_s, old_s.as_in_ctx(ctx)) for new_s, old_s in
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
                    zip(next_states, states)] if p_states != 0. else next_states)
 
         self._prev_output = output
@@ -1180,7 +1218,11 @@ class VariationalDropoutCell(ModifierCell):
         if self.drop_states:
             states = list(states)
             # state dropout only needs to be applied on h, which is always the first state.
+<<<<<<< HEAD
             states[0] = states[0].as_in_context(ctx) * self.drop_states_mask
+=======
+            states[0] = states[0].as_in_ctx(ctx) * self.drop_states_mask
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
         if self.drop_inputs:
             inputs = inputs * self.drop_inputs_mask
@@ -1385,7 +1427,11 @@ class LSTMPCell(HybridRecurrentCell):
         i2h = npx.fully_connected(inputs, weight=self.i2h_weight.data(ctx),
                                   bias=self.i2h_bias.data(ctx),
                                   num_hidden=self._hidden_size*4, no_bias=False)
+<<<<<<< HEAD
         h2h = npx.fully_connected(states[0].as_in_context(ctx),
+=======
+        h2h = npx.fully_connected(states[0].as_in_ctx(ctx),
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
                                   weight=self.h2h_weight.data(ctx),
                                   bias=self.h2h_bias.data(ctx),
                                   num_hidden=self._hidden_size*4, no_bias=False)
@@ -1395,7 +1441,11 @@ class LSTMPCell(HybridRecurrentCell):
         forget_gate = npx.activation(slice_gates[1], act_type="sigmoid")
         in_transform = npx.activation(slice_gates[2], act_type="tanh")
         out_gate = npx.activation(slice_gates[3], act_type="sigmoid")
+<<<<<<< HEAD
         next_c = forget_gate * states[1].as_in_context(ctx) + in_gate * in_transform
+=======
+        next_c = forget_gate * states[1].as_in_ctx(ctx) + in_gate * in_transform
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         hidden = np.multiply(out_gate, npx.activation(next_c, act_type="tanh"))
         next_r = npx.fully_connected(hidden, num_hidden=self._projection_size,
                                      weight=self.h2r_weight.data(ctx), no_bias=True)
@@ -1410,6 +1460,7 @@ class LSTMPCell(HybridRecurrentCell):
             if is_bidirect:
                 nh *= 2
             self.i2h_weight.shape = (4*self._hidden_size, nh)
+<<<<<<< HEAD
 
 
 from ...ndarray import NDArray
@@ -1485,6 +1536,8 @@ def foreach(body, data, init_states):
     outputs, _ = _regroup(outputs, out_fmt)
 
     return (outputs, states)
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
 
 def dynamic_unroll(cell, inputs, begin_state, drop_inputs=0, drop_outputs=0,
@@ -1575,6 +1628,10 @@ def dynamic_unroll(cell, inputs, begin_state, drop_inputs=0, drop_outputs=0,
         states = list(_as_list(states))
         states.append(np.zeros((1)))
         class loop_body(HybridBlock):
+<<<<<<< HEAD
+=======
+            """Loop body for foreach operator"""
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
             def __init__(self, cell):
                 super(loop_body, self).__init__()
                 self.cell = cell

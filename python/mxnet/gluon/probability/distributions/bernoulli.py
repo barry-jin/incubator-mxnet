@@ -35,9 +35,6 @@ class Bernoulli(ExponentialFamily):
         Probability of sampling `1`.
     logit : Tensor or scalar, default None
         The log-odds of sampling `1`.
-    F : mx.ndarray or mx.symbol.numpy._Symbol or None
-        Variable recording running mode, will be automatically
-        inferred from parameters if declared None.
     """
     # pylint: disable=abstract-method
 

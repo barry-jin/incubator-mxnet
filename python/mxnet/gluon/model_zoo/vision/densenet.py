@@ -61,7 +61,10 @@ def _make_transition(num_output_features):
     return out
 
 # Net
+<<<<<<< HEAD
 # pylint: disable=W0223
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class DenseNet(HybridBlock):
     r"""Densenet-BC model from the

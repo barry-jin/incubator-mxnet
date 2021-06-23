@@ -34,6 +34,13 @@ inline int String2MXNetActType(const std::string& s) {
     return activation::kReLU;
   } else if (s == "sigmoid") {
     return activation::kSigmoid;
+<<<<<<< HEAD
+=======
+  } else if (s == "log_sigmoid") {
+    return activation::kLogSigmoid;
+  } else if (s == "mish") {
+    return activation::kMish;
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
   } else if (s == "tanh") {
     return activation::kTanh;
   } else if (s == "softrelu") {

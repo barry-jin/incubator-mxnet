@@ -25,6 +25,11 @@ from mxnet.contrib import quantization
 from mxnet.gluon import nn
 from mxnet.test_utils import assert_almost_equal, assert_almost_equal_with_err
 
+<<<<<<< HEAD
+=======
+mx.npx.reset_np()
+
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @mx.util.use_np
 def test_float64_fallback():
   class ConvWithDtype(nn.HybridBlock):
@@ -119,6 +124,10 @@ def test_pos_conv_add2(no_bias, data_shape):
     ("relu", False), #TODO(bgawrych): investigate
     ("sigmoid", True),
     ("log_sigmoid", False),
+<<<<<<< HEAD
+=======
+    ("mish", False),
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     ("tanh", False), #TODO(bgawrych): investigate
     #("softrelu", True), #TODO(bgawrych): bug in oneDNN with AVX
     ("relu6", False), #TODO(bgawrych): investigate
@@ -161,6 +170,10 @@ def test_pos_conv_act_add(data_shape, alg, quantize, use_bias):
     ("relu", True),
     ("sigmoid", True),
     ("log_sigmoid", True),
+<<<<<<< HEAD
+=======
+    ("mish", True),
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     ("tanh", True),
     ("softrelu", True),
     ("relu6", True),
@@ -199,6 +212,10 @@ def test_pos_conv_bn_act(use_bias, data_shape, alg, quantize):
     ("relu", True),
     ("sigmoid", True),
     ("log_sigmoid", True),
+<<<<<<< HEAD
+=======
+    ("mish", True),
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     ("tanh", True),
     #("softrelu", True), #TODO(bgawrych): failing fusion check - difference in random single element
     ("relu6", True),
@@ -284,6 +301,7 @@ def test_pos_single_concat_pos_neg(data_shape, out_type):
 @mx.util.use_np
 @pytest.mark.parametrize('data_shape', DATA_SHAPE)
 @pytest.mark.parametrize('out_type', ['int8', 'auto'])
+@pytest.mark.skip("Scale doesn't align in numpy for numpy operators")
 def test_pos_concat_scale_align(data_shape, out_type):
   # concat scale alignment case
   class ConcatScaleAlign(nn.HybridBlock):
@@ -318,6 +336,10 @@ def test_pos_concat_scale_align(data_shape, out_type):
     ("relu", True),
     ("sigmoid", True),
     ("log_sigmoid", True),
+<<<<<<< HEAD
+=======
+    ("mish", True),
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     ("tanh", True),
     ("softrelu", True),
     ("relu6", True),

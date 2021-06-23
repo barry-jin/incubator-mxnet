@@ -37,9 +37,6 @@ class Categorical(Distribution):
         Probabilities of each event.
     logit : Tensor
         The log-odds of each event
-     F : mx.ndarray or mx.symbol.numpy._Symbol or None
-        Variable recording running mode, will be automatically
-        inferred from parameters if declared None.
     """
     # pylint: disable=abstract-method
 

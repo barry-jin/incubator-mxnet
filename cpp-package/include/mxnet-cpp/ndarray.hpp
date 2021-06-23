@@ -34,9 +34,12 @@
 #include "dmlc/logging.h"
 #include "mxnet-cpp/ndarray.h"
 #include "mxnet-cpp/operator.h"
+<<<<<<< HEAD
 #include "mxnet-cpp/operator_rt.h"
 
 MXNET_DEFINE_OP(mean)
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
 namespace mxnet {
 namespace cpp {
@@ -405,6 +408,7 @@ inline mx_float NDArray::At(size_t index) const {
   return GetData()[index];
 }
 
+<<<<<<< HEAD
 template <typename T>
 inline T NDArray::item(size_t index) const {
   auto shape = GetShape();
@@ -414,6 +418,8 @@ inline T NDArray::item(size_t index) const {
   return static_cast<T>(GetData()[index]);
 }
 
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 inline size_t NDArray::Size() const {
   size_t ret = 1;
   for (auto &i : GetShape()) ret *= i;
@@ -431,6 +437,7 @@ inline std::vector<mx_uint> NDArray::GetShape() const {
   return ret;
 }
 
+<<<<<<< HEAD
 mx_uint NDArray::size(index_t idx) const {
   std::vector<mx_uint> shape = GetShape();
   CHECK_LT(idx, shape.size()) << "The index need to be less than shape size";
@@ -443,6 +450,8 @@ inline NDArray NDArray::mean() const {
   return ret;
 }
 
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 inline int NDArray::GetDType() const {
   int ret;
   MXNDArrayGetDType(blob_ptr_->handle_, &ret);
@@ -465,6 +474,7 @@ inline Context NDArray::GetContext() const {
   return Context((DeviceType)out_dev_type, out_dev_id);
 }
 
+<<<<<<< HEAD
 inline void PreatyPrint(std::ostream &out, int depth, std::vector<mx_uint> shape,
                         int* offsite, const mx_float* data, bool first_round, bool last_round) {
   if (depth == shape.size()-1) {
@@ -506,6 +516,8 @@ inline void PreatyPrint(std::ostream &out, int depth, std::vector<mx_uint> shape
   }
 }
 
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 inline std::ostream & operator<<(std::ostream &out, const NDArray &ndarray) {
   // TODO(lx75249): Consider DType / beautify like numpy
   auto shape = ndarray.GetShape();
@@ -517,11 +529,19 @@ inline std::ostream & operator<<(std::ostream &out, const NDArray &ndarray) {
     ndarray.CopyTo(&cpu_array);
   }
 
+<<<<<<< HEAD
   cpu_array.WaitToRead();
   // std::copy(cpu_array.GetData(), cpu_array.GetData() + ndarray.Size(),
   //     std::ostream_iterator<float>(out, ", "));
   int offsite = 0;
   PreatyPrint(out, 0, shape, &offsite, cpu_array.GetData(), true, true);
+=======
+  out << '[';
+  cpu_array.WaitToRead();
+  std::copy(cpu_array.GetData(), cpu_array.GetData() + ndarray.Size(),
+      std::ostream_iterator<float>(out, ", "));
+  out << ']';
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
   return out;
 }
 

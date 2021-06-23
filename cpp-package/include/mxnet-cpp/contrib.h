@@ -75,10 +75,15 @@ namespace contrib {
       std::map<std::string, mxnet::cpp::NDArray> *auxParams) {
     mxnet::cpp::Symbol internals = symbol.GetInternals();
     mx_uint numSymbol = internals.GetNumOutputs();
+<<<<<<< HEAD
     std::cout << std::endl << numSymbol << std::endl;
     for (mx_uint i = 0; i < numSymbol; ++i) {
         std::map<std::string, std::string> attrs = internals[i].ListAttributes();
         std::cout << attrs.size() << std::endl;
+=======
+    for (mx_uint i = 0; i < numSymbol; ++i) {
+        std::map<std::string, std::string> attrs = internals[i].ListAttributes();
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         if (attrs.find(TENSORRT_SUBGRAPH_PARAM_IDENTIFIER) != attrs.end()) {
             std::string new_params_names;
             std::map<std::string, mxnet::cpp::NDArray> tensorrtParams;

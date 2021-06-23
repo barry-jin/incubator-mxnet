@@ -30,6 +30,7 @@ namespace op {
 
 MXNET_OPERATOR_REGISTER_UNARY(_npx_relu)
 .describe(R"code(Computes rectified linear activation.
+
 .. math::
 
    max(features, 0)

@@ -27,6 +27,7 @@
 
 namespace mxnet {
 namespace op {
+namespace adamw {
 
 DMLC_REGISTER_PARAMETER(AdamWParam);
 DMLC_REGISTER_PARAMETER(MultiAdamWParam);
@@ -65,7 +66,7 @@ the update is skipped.
   [](const nnvm::NodeAttrs& attrs) {
     return std::vector<uint32_t>{2, 3, 4};
   })
-.set_attr<FCompute>("FCompute<cpu>", MPUpdate<cpu, MPAdamWUpdate<cpu>>)
+.set_attr<FCompute>("FCompute<cpu>", adamw::MPUpdate<cpu, MPAdamWUpdate<cpu>>)
 .add_argument("weight", "NDArray-or-Symbol", "Weight")
 .add_argument("grad", "NDArray-or-Symbol", "Gradient")
 .add_argument("mean", "NDArray-or-Symbol", "Moving mean")
@@ -108,7 +109,7 @@ the update is skipped.
   [](const nnvm::NodeAttrs& attrs) {
     return std::vector<uint32_t>{2, 3};
   })
-.set_attr<FCompute>("FCompute<cpu>", MPUpdate<cpu, AdamWUpdate<cpu>>)
+.set_attr<FCompute>("FCompute<cpu>", adamw::MPUpdate<cpu, AdamWUpdate<cpu>>)
 .add_argument("weight", "NDArray-or-Symbol", "Weight")
 .add_argument("grad", "NDArray-or-Symbol", "Gradient")
 .add_argument("mean", "NDArray-or-Symbol", "Moving mean")
@@ -125,7 +126,8 @@ void GetScaleFloat<cpu>(mshadow::Stream<cpu> *s, const TBlob &scale_blob, float 
   )
 }
 
-std::vector<std::string> ParamToVector(uint32_t num_args, const char *pName[], size_t nParams) {
+static std::vector<std::string>
+ParamToVector(uint32_t num_args, const char *pName[], size_t nParams) {
   std::vector<std::string> ret;
   for (uint32_t i = 0; i < num_args; ++i) {
     const auto idx = std::to_string(i);
@@ -191,7 +193,7 @@ the update is skipped.
     return ret;
   })
 
-.set_attr<FCompute>("FCompute<cpu>", multiMPUpdate<cpu, false>)
+.set_attr<FCompute>("FCompute<cpu>", adamw::multiMPUpdate<cpu, false>)
 .add_argument("data", "NDArray-or-Symbol[]", "data")
 .add_arguments(MultiAdamWParam::__FIELDS__());
 
@@ -248,10 +250,11 @@ the update is skipped.
     return ret;
   })
 
-.set_attr<FCompute>("FCompute<cpu>", multiMPUpdate<cpu, true>)
+.set_attr<FCompute>("FCompute<cpu>", adamw::multiMPUpdate<cpu, true>)
 .add_argument("data", "NDArray-or-Symbol[]", "data")
 .add_arguments(MultiAdamWParam::__FIELDS__());
 
 
+}  // namespace adamw
 }  // namespace op
 }  // namespace mxnet

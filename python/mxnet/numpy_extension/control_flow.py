@@ -79,7 +79,10 @@ def foreach(body, data, init_states):
     >>> states = [mx.np.random.uniform(size=(10))]
     >>> outs, states = npx.control_flow.foreach(step, data, states)
     """
+<<<<<<< HEAD
     
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     return _mx_nd_npx.foreach(body, data, init_states)
 
 

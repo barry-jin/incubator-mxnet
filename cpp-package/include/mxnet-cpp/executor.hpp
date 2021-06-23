@@ -70,7 +70,11 @@ inline Executor::Executor(const Symbol &symbol, Context context,
     grad_reqs_uint.push_back(s);
   }
   CHECK_EQ(MXAutogradMarkVariables(arg_handles.size(), arg_handles.data(),
+<<<<<<< HEAD
                                    grad_reqs_uint.data(), grad_handles.data()),0);
+=======
+                                   grad_reqs_uint.data(), grad_handles.data()), 0);
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
   std::map<std::string, NDArray> arg_map = arg_dict();
   std::map<std::string, NDArray> aux_map = aux_dict();

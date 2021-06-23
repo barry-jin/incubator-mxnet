@@ -35,7 +35,10 @@ from ....util import use_np
 
 
 # Helpers
+<<<<<<< HEAD
 # pylint: disable=W0223
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class RELU6(nn.HybridBlock):
     """Relu6 used in MobileNetV2."""
@@ -62,7 +65,10 @@ def _add_conv_dw(out, dw_channels, channels, stride, relu6=False):
     _add_conv(out, channels=channels, relu6=relu6)
 
 
+<<<<<<< HEAD
 # pylint: disable=W0223
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class LinearBottleneck(nn.HybridBlock):
     r"""LinearBottleneck used in MobileNetV2 model from the
@@ -100,7 +106,10 @@ class LinearBottleneck(nn.HybridBlock):
 
 
 # Net
+<<<<<<< HEAD
 # pylint: disable=W0223
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class MobileNet(HybridBlock):
     r"""MobileNet model from the
@@ -139,7 +148,10 @@ class MobileNet(HybridBlock):
         return x
 
 
+<<<<<<< HEAD
 # pylint: disable=W0223
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 class MobileNetV2(nn.HybridBlock):
     r"""MobileNetV2 model from the

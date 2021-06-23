@@ -140,7 +140,11 @@ def clip_global_norm(arrays, max_norm, check_isfinite=True):
             groups[ctx].append(arr)
         return groups
     def multi_sum_sq(*args, ctx=None):
+<<<<<<< HEAD
         sum = _mx_np.array([0])
+=======
+        sum = _mx_np.array([0], ctx=ctx)
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         for arg in args:
             sum += _mx_np.square(arg).sum().item()
         return sum
@@ -488,6 +492,10 @@ def _check_all_np_ndarrays(out):
             _check_all_np_ndarrays(i)
     # pylint: enable=no-else-raise
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 def _check_block_input_np_ndarrays(inputs):
     """Check if block's inputs are numpy ndarrays."""
     from ..numpy import ndarray as np_ndarray
@@ -503,6 +511,9 @@ def _check_block_input_np_ndarrays(inputs):
         for i in inputs:
             _check_block_input_np_ndarrays(i)
     # pylint: enable=no-else-raise
+<<<<<<< HEAD
 
 
 # def split_rnn_params()
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b

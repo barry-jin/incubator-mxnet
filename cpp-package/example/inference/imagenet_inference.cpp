@@ -321,7 +321,10 @@ void Predictor::LoadParameters(const std::string& model_parameters_file) {
     std::map<std::string, NDArray> intermediate_args_map;
     std::map<std::string, NDArray> intermediate_aux_map;
     SplitParamMap(parameters, &intermediate_args_map, &intermediate_aux_map, Context::cpu());
+<<<<<<< HEAD
     std::cout << intermediate_args_map.size() << "   " << intermediate_aux_map.size();
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     contrib::InitTensorRTParams(net_, &intermediate_args_map, &intermediate_aux_map);
     ConvertParamMapToTargetContext(intermediate_args_map, &args_map_, global_ctx_);
     ConvertParamMapToTargetContext(intermediate_aux_map, &aux_map_, global_ctx_);

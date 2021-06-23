@@ -102,6 +102,16 @@ class SgMKLDNNFCSelector : public SubgraphSelector {
             return true;
           }
         }
+        if (new_node.op() == Op::Get("LeakyReLU")) {
+          const LeakyReLUParam &param = nnvm::get<LeakyReLUParam>(new_node.attrs.parsed);
+          if (param.act_type == leakyrelu::kLeakyReLU ||
+              param.act_type == leakyrelu::kELU ||
+              param.act_type == leakyrelu::kGELU) {
+            matched_list_.push_back(&new_node);
+            status_ = kSuccess;
+            return true;
+          }
+        }
         if (!quantized_ && (new_node.op() == Op::Get("square") ||
             new_node.op() == Op::Get("sqrt") ||
             new_node.op() == Op::Get("exp"))) {
@@ -158,7 +168,7 @@ class SgMKLDNNFCSelector : public SubgraphSelector {
 class SgMKLDNNFCProperty : public SubgraphProperty {
  public:
   SgMKLDNNFCProperty() {
-    disable_fc_eltwise_ = dmlc::GetEnv("MXNET_DISABLE_MKLDNN_FUSE_FC_ELTWISE", false);
+    disable_fc_eltwise_ = dmlc::GetEnv("MXNET_DISABLE_ONEDNN_FUSE_FC_ELTWISE", false);
   }
 
   static SubgraphPropertyPtr Create() {
@@ -166,7 +176,7 @@ class SgMKLDNNFCProperty : public SubgraphProperty {
     auto property = std::make_shared<SgMKLDNNFCProperty>();
     property->SetAttr<std::string>("property_name", name);
     property->SetAttr<bool>("inference_only", true);
-    if (dmlc::GetEnv("MXNET_DISABLE_MKLDNN_FC_OPT", 0)) {
+    if (dmlc::GetEnv("MXNET_DISABLE_ONEDNN_FC_OPT", 0)) {
       property->SetAttr<bool>("disable", true);
     }
     return property;

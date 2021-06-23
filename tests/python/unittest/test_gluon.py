@@ -29,7 +29,7 @@ from mxnet.ndarray.ndarray import _STORAGE_TYPE_STR_TO_ID
 from mxnet.test_utils import use_np
 from common import assertRaises, assert_raises_cudnn_not_satisfied, \
     xfail_when_nonstandard_decimal_separator, environment
-import numpy as np
+import numpy as onp
 from numpy.testing import assert_array_equal
 import pytest
 from copy import deepcopy
@@ -37,6 +37,8 @@ import warnings
 import json
 import random
 import tempfile
+
+mx.npx.reset_np()
 
 def test_parameter():
     p = gluon.Parameter('weight', shape=(10, 10))
@@ -122,7 +124,7 @@ def test_constant():
     class Test(gluon.HybridBlock):
         def __init__(self, **kwargs):
             super(Test, self).__init__(**kwargs)
-            self.value = np.asarray([[1,2], [3,4]])
+            self.value = onp.asarray([[1,2], [3,4]])
             self.const = gluon.Constant(self.value)
 
         def forward(self, x):
@@ -202,6 +204,7 @@ def test_collect_parameters():
     assert set(net.collect_params('0.bias|1.bias').keys()) == \
         set(['0.bias', '1.bias'])
 
+@use_np
 def test_basic():
     model = nn.Sequential()
     model.add(nn.Dense(128, activation='tanh', in_units=10, flatten=False))
@@ -242,6 +245,10 @@ def test_sparse_hybrid_block():
         # an exception is expected when forwarding a HybridBlock w/ sparse param
         y = net(x)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 def test_hybrid_block_none_args():
     class Foo(gluon.HybridBlock):
@@ -779,7 +786,11 @@ def check_split_data(x, num_slice, batch_axis, **kwargs):
     assert len(res) == num_slice
     mx.test_utils.assert_almost_equal(mx.np.concatenate(res, axis=batch_axis).asnumpy(),
                                       x.asnumpy())
+<<<<<<< HEAD
     np_res = np.array_split(x.asnumpy(), num_slice, axis=batch_axis)
+=======
+    np_res = onp.array_split(x.asnumpy(), num_slice, axis=batch_axis)
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     res_asnp = [s.asnumpy() for s in res]
     for r1, r2 in zip(np_res, res_asnp):
         assert all(r1.reshape(-1) == r2.reshape(-1))
@@ -943,6 +954,7 @@ def check_sequential_dc(net):
     assert len(slc) == 2 and slc[0] is dense2 and slc[1] is dense3
     assert isinstance(slc, type(net))
 
+@use_np
 @pytest.mark.garbage_expected
 def test_sequential():
     check_sequential(gluon.nn.Sequential())
@@ -966,8 +978,8 @@ def test_global_norm_clip():
         x2 = mx.np.ones((4,4))
         norm = gluon.utils.clip_global_norm([x1, x2], 1.0, check_isfinite=check_isfinite)
         assert norm == 5.0
-        assert_almost_equal(x1.asnumpy(), np.ones((3,3))/5)
-        assert_almost_equal(x2.asnumpy(), np.ones((4,4))/5)
+        assert_almost_equal(x1.asnumpy(), onp.ones((3,3))/5)
+        assert_almost_equal(x2.asnumpy(), onp.ones((4,4))/5)
 
         x3 = mx.np.array([1.0, 2.0, float('nan')])
         with warnings.catch_warnings(record=True) as w:
@@ -1125,19 +1137,23 @@ def test_dtype():
     class Net(gluon.Block):
         def __init__(self, in_dim, output_dim):
             super(Net, self).__init__()
-            self.embed = gluon.nn.Embedding(input_dim=in_dim, output_dim=output_dim,dtype=np.float64)
-            self.dense = gluon.nn.Dense(2, dtype=np.float64)
+            self.embed = gluon.nn.Embedding(input_dim=in_dim, output_dim=output_dim,dtype=onp.float64)
+            self.dense = gluon.nn.Dense(2, dtype=onp.float64)
 
         def forward(self, x):
             e = self.embed(x)
-            assert(e.dtype == np.float64)
+            assert(e.dtype == onp.float64)
             y = self.dense(e)
-            assert(y.dtype == np.float64)
+            assert(y.dtype == onp.float64)
             return y
 
     net = Net(5, 10)
     net.initialize()
+<<<<<<< HEAD
     out = net(mx.np.ones((3,), dtype=np.float64))
+=======
+    out = net(mx.np.ones((3,), dtype=onp.float64))
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     mx.npx.waitall()
 
 def test_fill_shape_load():
@@ -1233,7 +1249,7 @@ def test_activations():
     multichannel_init = mx.initializer.Constant(mx.np.array([0.1, 0.25, 0.5]))
     prelu_multichannel = mx.gluon.nn.PReLU(alpha_initializer=multichannel_init, in_channels=3)
     prelu_multichannel.initialize()
-    assert_almost_equal(prelu_multichannel(x).asnumpy(), np.array([[-0.01, 0.1], [-0.025, 0.1], [-0.05, 0.1]]))
+    assert_almost_equal(prelu_multichannel(x).asnumpy(), onp.array([[-0.01, 0.1], [-0.025, 0.1], [-0.05, 0.1]]))
 
     # https://github.com/apache/incubator-mxnet/issues/18381
     # gelu = mx.gluon.nn.GELU()
@@ -1354,10 +1370,15 @@ def test_save_load(tmpdir):
     net = Network()
     net.initialize(mx.init.Xavier(), ctx=mx.cpu())
     net.hybridize()
+<<<<<<< HEAD
     x = np.random.rand(32, 10, 10)
+=======
+    x = onp.random.rand(32, 10, 10)
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     x = mx.np.array(x).as_in_context(mx.cpu())
     net(x)
-    _, param_path = tempfile.mkstemp(suffix='.params', dir=str(tmpdir))
+    # _, param_path = tempfile.mkstemp(suffix='.params', dir=str(tmpdir))
+    param_path = os.path.join(str(tmpdir), 'test_save_load_network.params')
     net.save_parameters(param_path)
     net2 = Network()
     net2.load_parameters(param_path)
@@ -1379,7 +1400,8 @@ def test_save_load_deduplicate_with_shared_params(tmpdir):
     b2 = B().share_parameters(b1.collect_params())
     c = C(b1, b2)
     c.initialize()
-    _, param_path = tempfile.mkstemp(suffix='.params', dir=str(tmpdir))
+    # _, param_path = tempfile.mkstemp(suffix='.params', dir=str(tmpdir))
+    param_path = os.path.join(str(tmpdir), 'test_save_load_deduplicate_with_shared_params.params')
     c.save_parameters(param_path, deduplicate=True)
 
     params = mx.npx.load(param_path)
@@ -1402,6 +1424,7 @@ def test_save_load_deduplicate_with_shared_params(tmpdir):
     c.load_parameters(param_path)
 
 
+<<<<<<< HEAD
 def test_symbol_block_save_load(tmpdir):
     tmp = str(tmpdir)
     tmpfile = os.path.join(tmp, 'resnet34_fp64')
@@ -1433,6 +1456,8 @@ def test_symbol_block_save_load(tmpdir):
     net2 = Net()
     net2.load_parameters(params_file)
 
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 def test_hybrid_multi_context():
     net = mx.gluon.model_zoo.vision.get_resnet(1, 18)
     net.initialize(ctx=[mx.cpu(0), mx.cpu(1)])
@@ -1459,9 +1484,15 @@ def test_zero_grad():
         for _ in range(nArrays):
             arrType = random.choice(dtype) if isinstance(dtype, list) else dtype
             shape = ()
+<<<<<<< HEAD
             for _ in range(np.random.randint(1, 5)):
                 shape = shape + (np.random.randint(1, 10),)
             arr.append(mx.np.random.uniform(shape=shape, dtype=arrType, ctx=ctx))
+=======
+            for _ in range(onp.random.randint(1, 5)):
+                shape = shape + (onp.random.randint(1, 10),)
+            arr.append(mx.nd.random.uniform(shape=shape, dtype=arrType, ctx=ctx))
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
         # Reset all arrays
         mx.np.reset_arrays(*arr, num_arrays=len(arr))
@@ -1479,7 +1510,7 @@ def test_zero_grad():
     testedTypes = ['float16', 'float32', 'float64']
     for _ in range(10):
         for type in [testedTypes] + testedTypes:
-            _test_multi_reset(np.random.randint(1, 50), type, ctx)
+            _test_multi_reset(onp.random.randint(1, 50), type, ctx)
 
     with environment('MXNET_STORAGE_FALLBACK_LOG_VERBOSE', '0'):
         for type in ['float16', 'float32', 'float64']:
@@ -1718,7 +1749,11 @@ def test_sparse_hybrid_block():
             self.w = gluon.Parameter('w', shape=(units, units))
 
         def forward(self, x, w):
+<<<<<<< HEAD
             return np.dot(x, w)
+=======
+            return mx.np.dot(x, w)
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
     class SparseBlock(mx.gluon.HybridBlock):
         def __init__(self, units):
@@ -1818,11 +1853,11 @@ def check_layer_forward_withinput(net, x):
     x_hybrid.attach_grad()
     net.initialize()
     with mx.autograd.record():
-        out1 = net(x)
+        out1 = net(x_hybrid)
     out1.backward()
     net.hybridize()
     with mx.autograd.record():
-        out2 = net(x_hybrid)
+        out2 = net(x)
     out2.backward()
     mx.test_utils.assert_almost_equal(x.grad.asnumpy(), x_hybrid.grad.asnumpy(), rtol=1e-5, atol=1e-6)
     mx.test_utils.assert_almost_equal(out1.asnumpy(), out2.asnumpy(), rtol=1e-5, atol=1e-6)
@@ -1852,7 +1887,7 @@ def test_conv2d_16c(chn_num, kernel):
 @pytest.mark.parametrize('grp', [16])
 @pytest.mark.parametrize('kernel_size', [1, 3])
 def test_group_conv2d_16c(grp, kernel_size):
-    input_size_list = np.random.randint(low=3, high=65, size=10).tolist()
+    input_size_list = onp.random.randint(low=3, high=65, size=10).tolist()
     batch_size = 4
     class Net(gluon.HybridBlock):
         def __init__(self,
@@ -1900,7 +1935,7 @@ def test_deconv2d_16c():
 @pytest.mark.skip(reason='skippping temporarily, tracked by https://github.com/apache/incubator-mxnet/issues/11164')
 def test_batchnorm_16c():
     chn_list = [16, 1024]
-    shape = np.random.randint(low=1, high=300, size=10)
+    shape = onp.random.randint(low=1, high=300, size=10)
     shape_list = []
     for i in range(len(shape)):
         shape_list.append((shape[i], shape[i]))
@@ -1966,7 +2001,7 @@ def test_batchnorm_chnls():
 def test_concat():
     chn_list = [16, 64]
     shapes = [1, 3, 5]
-    input_num = np.random.randint(low=2, high=11)
+    input_num = onp.random.randint(low=2, high=11)
     shape_list = []
     for i in range(len(shapes)):
         shape_list.append((shapes[i], shapes[i]))
@@ -2114,7 +2149,7 @@ def test_reshape_dense():
     class Net(gluon.HybridBlock):
         def __init__(self, **kwargs):
             super(Net, self).__init__(**kwargs)
-            channel0 = np.random.randint(1, 17)
+            channel0 = onp.random.randint(1, 17)
             self.dense0 = nn.Dense(channel0)
 
         def forward(self, x):
@@ -2132,7 +2167,7 @@ def test_slice_dense():
     class Net(gluon.HybridBlock):
         def __init__(self, slice, **kwargs):
             super(Net, self).__init__(**kwargs)
-            channel0 = np.random.randint(1, 17)
+            channel0 = onp.random.randint(1, 17)
             self.dense0 = nn.Dense(channel0)
             self.slice = slice
 
@@ -2153,7 +2188,7 @@ def test_slice_dense_slice_dense():
         def __init__(self, slice, **kwargs):
             super(Net, self).__init__(**kwargs)
             channel0 = 32
-            channel1 = np.random.randint(1, 17)
+            channel1 = onp.random.randint(1, 17)
             self.dense0 = nn.Dense(channel0)
             self.dense1 = nn.Dense(channel1)
             self.slice = slice
@@ -2175,8 +2210,8 @@ def test_reshape_dense_reshape_dense():
     class Net(gluon.HybridBlock):
         def __init__(self, **kwargs):
             super(Net, self).__init__(**kwargs)
-            channel0 = np.random.randint(1, 17)
-            channel1 = np.random.randint(1, 33)
+            channel0 = onp.random.randint(1, 17)
+            channel1 = onp.random.randint(1, 33)
             self.dense0 = nn.Dense(channel0)
             self.dense1 = nn.Dense(channel1)
 
@@ -2197,8 +2232,8 @@ def test_slice_dense_reshape_dense():
     class Net(gluon.HybridBlock):
         def __init__(self, slice, **kwargs):
             super(Net, self).__init__(**kwargs)
-            channel0 = np.random.randint(1, 17)
-            channel1 = np.random.randint(1, 17)
+            channel0 = onp.random.randint(1, 17)
+            channel1 = onp.random.randint(1, 17)
             self.dense0 = nn.Dense(channel0)
             self.dense1 = nn.Dense(channel1)
             self.slice = slice
@@ -2222,7 +2257,7 @@ def test_reshape_dense_slice_dense():
         def __init__(self, **kwargs):
             super(Net, self).__init__(**kwargs)
             channel0 = 64
-            channel1 = np.random.randint(1, 17)
+            channel1 = onp.random.randint(1, 17)
             self.dense0 = nn.Dense(channel0)
             self.dense1 = nn.Dense(channel1)
 
@@ -2508,9 +2543,15 @@ def test_slice_pooling2d_slice_pooling2d():
             y_slice = mx.npx.slice(y, begin=self.slice[1][0], end=self.slice[1][1])
             out = self.pool1(y_slice)
             return out
+<<<<<<< HEAD
     x = mx.np.random.uniform(size=(8, 64, 128, 128))
     # x = mx.np.random.uniform(size=(16, 128, 256, 256))
     slice = [[(4, 0, 50, 25), (16, -1, -1, -1)], [(0, 32, 0, 25), (2, -1, -1, -1)]]
+=======
+
+    x = mx.np.random.uniform(size=(16, 128, 256, 256))
+    slice = [[(8, 0, 100, 50), (16, -1, -1, -1)], [(0, 64, 0, 50), (2, -1, -1, -1)]]
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     for i in range(len(pooling_layers)):
         for j in range(len(pooling_layers)):
             if isinstance(pooling_layers[i], (nn.GlobalMaxPool2D, nn.GlobalAvgPool2D)):
@@ -2905,7 +2946,11 @@ def test_gluon_param_load_dtype_source():
     net.save_parameters('test_gluon_param_load_dtype_source.params')
     net.cast('float32')
     net.load_parameters('test_gluon_param_load_dtype_source.params', cast_dtype=True, dtype_source="saved")
+<<<<<<< HEAD
     assert net.weight.dtype == np.float16
+=======
+    assert net.weight.dtype == onp.float16
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     mx.npx.waitall()
 
 @use_np
@@ -2919,7 +2964,11 @@ def test_squeeze_consistency():
 
     block = Foo()
     block.hybridize()
+<<<<<<< HEAD
     shape = (np.random.randint(1, 10), np.random.randint(1, 10), 1)
+=======
+    shape = (onp.random.randint(1, 10), onp.random.randint(1, 10), 1)
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     block(mx.np.ones(shape))
 
 def test_shared_parameters_with_non_default_initializer():
@@ -3101,7 +3150,11 @@ def test_pixelshuffle1d():
     shape_before = (1, nchan * up_x, nx)
     shape_after = (1, nchan, nx * up_x)
     layer = nn.PixelShuffle1D(up_x)
+<<<<<<< HEAD
     x = mx.np.arange(np.prod(shape_before)).reshape(shape_before)
+=======
+    x = mx.np.arange(onp.prod(shape_before)).reshape(shape_before)
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     y = layer(x)
     assert y.shape == shape_after
     assert_allclose(
@@ -3119,7 +3172,11 @@ def test_pixelshuffle2d():
     shape_before = (1, nchan * up_x * up_y, nx, ny)
     shape_after = (1, nchan, nx * up_x, ny * up_y)
     layer = nn.PixelShuffle2D((up_x, up_y))
+<<<<<<< HEAD
     x = mx.np.arange(np.prod(shape_before)).reshape(shape_before)
+=======
+    x = mx.np.arange(onp.prod(shape_before)).reshape(shape_before)
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     y = layer(x)
     assert y.shape == shape_after
     # - Channels are reshaped to form 2x3 blocks
@@ -3151,7 +3208,11 @@ def test_pixelshuffle3d():
     shape_before = (1, nchan * up_x * up_y * up_z, nx, ny, nz)
     shape_after = (1, nchan, nx * up_x, ny * up_y, nz * up_z)
     layer = nn.PixelShuffle3D((up_x, up_y, up_z))
+<<<<<<< HEAD
     x = mx.np.arange(np.prod(shape_before)).reshape(shape_before)
+=======
+    x = mx.np.arange(onp.prod(shape_before)).reshape(shape_before)
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     y = layer(x)
     assert y.shape == shape_after
     # - Channels are reshaped to form 2x1x2 blocks

@@ -23,7 +23,11 @@
 
 __all__ = ['RNN', 'LSTM', 'GRU']
 
+<<<<<<< HEAD
 from ... import ndarray, np, npx, context
+=======
+from ... import np, npx, context
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 from .. import HybridBlock, tensor_types
 from ..parameter import Parameter
 from ...util import use_np
@@ -226,7 +230,11 @@ class _RNNLayer(HybridBlock):
                       for g in ['i2h', 'h2h', 'h2r']
                       if g != 'h2r' or t != 'bias')
 
+<<<<<<< HEAD
         params = ndarray.np._internal.rnn_param_concat(*params, dim=0)
+=======
+        params = np.concatenate(params, axis=0)
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
         if self._use_sequence_length:
             rnn_args = states + [sequence_length]
@@ -235,7 +243,11 @@ class _RNNLayer(HybridBlock):
 
         rnn_args_ctx = []
         for args in rnn_args:
+<<<<<<< HEAD
             new_args = args.as_in_context(ctx)
+=======
+            new_args = args.as_in_ctx(ctx)
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
             rnn_args_ctx.append(new_args)
 
         rnn = npx.rnn(inputs, params, *rnn_args_ctx, use_sequence_length=self._use_sequence_length,

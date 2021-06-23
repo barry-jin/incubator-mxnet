@@ -2171,6 +2171,14 @@ fixed-size items.
         """
         return op.log1p(self, *args, **kwargs)
 
+    def log_sigmoid(self, *args, **kwargs):
+        """Convenience fluent method for :py:func:`log_sigmoid`.
+
+        The arguments are the same as for :py:func:`log_sigmoid`, with
+        this array as data.
+        """
+        return op.log_sigmoid(self, *args, **kwargs)
+
     def sqrt(self, *args, **kwargs):
         """Convenience fluent method for :py:func:`sqrt`.
 
@@ -2258,6 +2266,14 @@ fixed-size items.
         this array as data.
         """
         return op.softmin(self, *args, **kwargs)
+
+    def mish(self, *args, **kwargs):
+        """Convenience fluent method for :py:func:`mish`.
+
+        The arguments are the same as for :py:func:`mish`, with
+        this array as data.
+        """
+        return op.mish(self, *args, **kwargs)
 
     def squeeze(self, axis=None, inplace=False):
         """Remove dimensions with size 1 from this array without altering any data.

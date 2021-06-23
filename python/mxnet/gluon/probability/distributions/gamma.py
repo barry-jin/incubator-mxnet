@@ -37,9 +37,6 @@ class Gamma(ExponentialFamily):
     scale : Tensor or scalar, default 1
         scale parameter of the distribution, often represented by `\theta`,
         `\theta` = 1 / `\beta`, where `\beta` stands for the rate parameter.
-    F : mx.ndarray or mx.symbol.numpy._Symbol or None
-        Variable recording running mode, will be automatically
-        inferred from parameters if declared None.
     """
     # pylint: disable=abstract-method
 

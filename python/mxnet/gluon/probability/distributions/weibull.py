@@ -58,7 +58,11 @@ class Weibull(TransformedDistribution):
 
     def sample_n(self, size=None):
         return self.scale * np.random.weibull(self.concentration,
+<<<<<<< HEAD
                                                 sample_n_shape_converter(size))
+=======
+                                              sample_n_shape_converter(size))
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 
     @property
     def mean(self):

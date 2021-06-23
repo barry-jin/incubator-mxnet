@@ -32,6 +32,7 @@
 
 namespace mxnet {
 namespace op {
+namespace adamw {
 
 struct AdamWParam : public dmlc::Parameter<AdamWParam> {
   float lr;
@@ -114,7 +115,7 @@ struct MPAdamWKernel {
     float var = var_data[i] = param_beta2 * var_data[i] +
                   (1.0f - param_beta2) * mshadow_op::square::Map(scaled_grad);
 
-    w = w - param_eta * (param_lr * mean / (mshadow_op::square_root::Map(var) + param_epsilon)
+    w -= param_eta * (param_lr * mean / (mshadow_op::square_root::Map(var) + param_epsilon)
                          + param_wd * w);
     weight32[i] = w;
     KERNEL_ASSIGN(out_data[i], req, w);
@@ -349,7 +350,7 @@ template<typename MPDType, bool has_mixed_precision>
 struct MultiMPAdamWKernel {
   template<typename DType>
   MSHADOW_XINLINE static void Map(int i, const MultiAdamKernelParam<DType, MPDType>& param,
-                                  const OpReqType req, const float rescale_grad){
+                                  const OpReqType req, const float rescale_grad) {
     for (int index = 0; index < param.count; ++index) {
       if ((size_t)i < param.sizes[index]) {
         MPDType w = has_mixed_precision ? param.weights32[index][i]:
@@ -442,7 +443,7 @@ static inline void MultiAdamWUpdate(const nnvm::NodeAttrs& attrs,
 }
 
 template<typename xpu>
-void GetScaleFloat(mshadow::Stream<xpu> *s, const TBlob &scale_blob, float *pScalef);
+static void GetScaleFloat(mshadow::Stream<xpu> *s, const TBlob &scale_blob, float *pScalef);
 
 template<typename xpu>
 bool PrepareInputBlobs(const OpContext &ctx,
@@ -450,7 +451,7 @@ bool PrepareInputBlobs(const OpContext &ctx,
                        std::vector<TBlob> *inputs_wo_scale,
                        float *pScalef) {
   const size_t num_in = inputs.size() - 1;
-  GetScaleFloat<xpu>(ctx.get_stream<xpu>(), inputs[num_in], pScalef);
+  adamw::GetScaleFloat<xpu>(ctx.get_stream<xpu>(), inputs[num_in], pScalef);
   if (!std::isfinite(*pScalef) || *pScalef == 0)
     return false;
 
@@ -494,6 +495,7 @@ inline void multiMPUpdate(const nnvm::NodeAttrs& attrs,
       (attrs, ctx, inputs_wo_scale, req, outputs, scalef);
 }
 
+}  // namespace adamw
 }  // namespace op
 }  // namespace mxnet
 

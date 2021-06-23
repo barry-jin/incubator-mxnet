@@ -82,6 +82,7 @@ FP16_FP32_FUNCS = [
     '_FusedOpHelper',
     '_FusedOpOutHelper',
     '_NoGradient',
+    '_adabelief_update',
     '_adamw_update',
     '_arange',
     '_cond',
@@ -153,11 +154,14 @@ FP16_FP32_FUNCS = [
     '_minimum_scalar',
     '_minus_scalar',
     '_mod_scalar',
+    '_mp_adabelief_update',
     '_mp_adamw_update',
     '_mul_scalar',
+    '_multi_adabelief_update',
     '_multi_adamw_update',
     '_multi_lamb_update',
     '_multi_lans_update',
+    '_multi_mp_adabelief_update',
     '_multi_mp_adamw_update',
     '_multi_mp_lamb_update',
     '_multi_mp_lans_update',
@@ -313,6 +317,9 @@ FP16_FP32_FUNCS = [
     '_npx_relu',
     '_npx_reshape',
     '_npx_sigmoid',
+    '_npx_cond',
+    '_npx_foreach',
+    '_npx_while_loop',
     '_onehot_encode',
     '_ones',
     '_plus_scalar',
@@ -391,8 +398,10 @@ FP16_FP32_FUNCS = [
     'lamb_update_phase1',
     'lamb_update_phase2',
     'logical_not',
+    'log_sigmoid',
     'max',
     'min',
+    'mish',
     'mp_lamb_update_phase1',
     'mp_lamb_update_phase2',
     'mp_nag_mom_update',
@@ -576,6 +585,7 @@ FP32_FUNCS = [
     'topk',
 
     # Neural network
+    'SoftmaxOutput',
     'softmax',
     'log_softmax',
     'masked_softmax',
@@ -586,6 +596,10 @@ FP32_FUNCS = [
     'L2Normalization',
     'LRN',
     'SoftmaxActivation',
+    'LinearRegressionOutput',
+    'LogisticRegressionOutput',
+    'MAERegressionOutput',
+    'SVMOutput',
     'softmax_cross_entropy',
     'smooth_l1',
     'MakeLoss',
@@ -600,7 +614,7 @@ FP32_FUNCS = [
     '_contrib_sldwin_atten_context',
     ]
 
-if Features().is_enabled('MKLDNN'):
+if Features().is_enabled('ONEDNN'):
     FP32_FUNCS.extend([
         '_sg_mkldnn_conv',
         '_sg_mkldnn_fully_connected',
@@ -717,4 +731,8 @@ WIDEST_TYPE_CASTS = [
     ]
 
 LOSS_OUTPUT_FUNCTIONS = [
+    'SoftmaxOutput',
+    'LinearRegressionOutput',
+    'LogisticRegressionOutput',
+    'MAERegressionOutput',
     ]

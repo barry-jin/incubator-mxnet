@@ -173,7 +173,11 @@ class HybridNet(gluon.HybridBlock):
         x = self.pool2(mx.np.tanh(self.conv2(x)))
         # 0 means copy over size from corresponding dimension.
         # -1 means infer size from the rest of dimensions.
+<<<<<<< HEAD
         x = x.reshape(-1)
+=======
+        x = x.reshape((0, -1))
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         x = mx.np.tanh(self.fc1(x))
         x = mx.np.tanh(self.fc2(x))
         return x

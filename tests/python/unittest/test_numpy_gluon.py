@@ -601,7 +601,10 @@ def test_pixelshuffle3d():
             [68, 92, 69, 93, 70, 94, 71, 95]]]]]
     )
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 @use_np
 def test_embedding():
     def check_embedding():

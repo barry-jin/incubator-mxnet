@@ -216,12 +216,12 @@ class Block:
                 self.dense1 = nn.Dense(20)
 
             def forward(self, x):
-                x = mx.nd.relu(self.dense0(x))
-                return mx.nd.relu(self.dense1(x))
+                x = mx.npx.relu(self.dense0(x))
+                return mx.npx.relu(self.dense1(x))
 
         model = Model()
         model.initialize(ctx=mx.cpu(0))
-        model(mx.nd.zeros((10, 10), ctx=mx.cpu(0)))
+        model(mx.np.zeros((10, 10), ctx=mx.cpu(0)))
 
 
     Child :py:class:`Block` assigned this way will be registered and :py:meth:`collect_params`
@@ -1009,13 +1009,13 @@ class HybridBlock(Block):
                 self.dense1 = nn.Dense(20)
 
             def forward(self, x):
-                x = nd.relu(self.dense0(x))
-                return nd.relu(self.dense1(x))
+                x = mx.npx.relu(self.dense0(x))
+                return mx.npx.relu(self.dense1(x))
 
         model = Model()
         model.initialize(ctx=mx.cpu(0))
         model.hybridize()
-        model(mx.nd.zeros((10, 10), ctx=mx.cpu(0)))
+        model(mx.np.zeros((10, 10), ctx=mx.cpu(0)))
 
     Forward computation in :py:class:`HybridBlock` must be static to work with :py:class:`Symbol` s,
     i.e. you cannot call :py:meth:`NDArray.asnumpy`, :py:attr:`NDArray.shape`,
@@ -1027,7 +1027,7 @@ class HybridBlock(Block):
     Before activating with :py:meth:`hybridize()`, :py:class:`HybridBlock` works just like normal
     :py:class:`Block`. After activation, :py:class:`HybridBlock` will create a symbolic graph
     representing the forward computation and cache it. On subsequent forwards,
-    the cached graph will be used instead of :py:meth:`hybrid_forward`.
+    the cached graph will be used instead of :py:meth:`forward`.
 
     Please see references for detailed tutorial.
 
@@ -1039,8 +1039,8 @@ class HybridBlock(Block):
     def __init__(self):
         super(HybridBlock, self).__init__()
         assert hasattr(self, "hybrid_forward") is False, (
-            "Starting from MXNet2.0, Gluon2.0 with forward interface will be used instead of "
-            "hybrid_forward. Please follow MXNet2.0 Migration Guide to use new APIs.")
+            "'forward' instead of 'hybrid_forward' interface needs to be used starting from Gluon2.0."
+            "Please follow MXNet2.0 Migration Guide to use new APIs.")
         self._cached_graph = ()
         self._cached_op = None
         self._out_format = None
@@ -1064,11 +1064,6 @@ class HybridBlock(Block):
                                when changing the children blocks.")
                 self._active = False
             self._clear_cached_op()
-    
-    # def __del__(self):
-    #     """Destructor"""
-    #     if self._cached_graph and not isinstance(self, SymbolBlock):
-    #         dc.clear(self._cached_graph[1])
 
     def _get_graph(self, *args):
         if not self._cached_graph:
@@ -1580,10 +1575,9 @@ class HybridBlock(Block):
             cld()._monitor_all = monitor_all
 
     def __call__(self, x, *args):
-        if is_np_array():
-            _check_block_input_np_ndarrays([x, *args])
+        _check_block_input_np_ndarrays([x, *args])
         assert self.forward is not HybridBlock.forward, (
-            'Must either define {name}.forward or {name}.hybrid_forward. '
+            'Must define {name}.forward. '
             'Defining {name}.hybrid_forward is deprecated.'.format(name=type(self).__name__))
 
         _, has_ndarray, ctx_set, first_ctx = _gather_type_ctx_info([x] + list(args))

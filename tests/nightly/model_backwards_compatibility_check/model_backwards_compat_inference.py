@@ -54,12 +54,20 @@ def test_lenet_gluon_hybrid_imports_api():
             logging.warn('No training files found for %s for MXNet version : %s' % (model_name, folder))
             continue
             # Load the model and perform inference
+<<<<<<< HEAD
         data = mx.npx.load(''.join([model_name, '-data']))
+=======
+        data = mx.np.load(''.join([model_name, '-data']))
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         test_data = data['data']
         loaded_model = HybridNet()
         loaded_model = gluon.SymbolBlock.imports(model_name + '-symbol.json', ['data'], model_name + '-0000.params')
         output = loaded_model(test_data)
+<<<<<<< HEAD
         old_inference_results = mx.npx.load(model_name + '-inference')['inference']
+=======
+        old_inference_results = mx.np.load(model_name + '-inference')['inference']
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
         assert_almost_equal(old_inference_results.asnumpy(), output.asnumpy(), rtol=rtol_default, atol=atol_default)
         clean_model_files(model_files, model_name)
         logging.info('=================================')

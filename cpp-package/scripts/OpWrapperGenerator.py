@@ -320,7 +320,11 @@ def ParseAllOps():
                                               const char ***arg_descriptions,
                                               const char **key_var_num_args);
     """
+<<<<<<< HEAD
     cdll.libmxnet = cdll.LoadLibrary(find_lib_path()[0])
+=======
+    cdll.libmxnet = cdll.LoadLibrary(sys.argv[1])
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
     ListOP = cdll.libmxnet.MXSymbolListAtomicSymbolCreators
     GetOpInfo = cdll.libmxnet.MXSymbolGetAtomicSymbolInfo
     ListOP.argtypes=[POINTER(c_int), POINTER(POINTER(c_void_p))]
@@ -373,6 +377,7 @@ def ParseAllOps():
         ret2 = ret2 + op.GetOpDefinitionString(False) + "\n"
     return ret + ret2
 
+<<<<<<< HEAD
 def find_lib_path(prefix='libmxnet'):
     """Find MXNet dynamic library files.
 
@@ -432,6 +437,8 @@ def find_lib_path(prefix='libmxnet'):
             os.add_dll_directory(os.path.join(os.environ['CUDA_PATH'], 'bin'))
     return lib_path
 
+=======
+>>>>>>> da4ff3a4dc0bd6a54af3d75c492021d18ba1867b
 if __name__ == "__main__":
     #et = EnumType(typeName = 'MyET')
     #print(et.GetDefinitionString())
