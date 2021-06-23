@@ -496,9 +496,9 @@ inline void LogStorageFallback(const nnvm::NodeAttrs& attrs,
   os << "\nStorage type fallback detected:\n" << op_str << warning;
   LogOnce(os.str());
 #if MXNET_USE_ONEDNN == 1
-  if (!MKLDNNEnvSet()) common::LogOnce("MXNET_MKLDNN_ENABLED flag is off. "
-                                       "You can re-enable by setting MXNET_MKLDNN_ENABLED=1");
-  if (GetMKLDNNCacheSize() != -1) common::LogOnce("MXNET_MKLDNN_CACHE_NUM is set."
+  if (!MKLDNNEnvSet()) common::LogOnce("MXNET_ONEDNN_ENABLED flag is off. "
+                                       "You can re-enable by setting MXNET_ONEDNN_ENABLED=1");
+  if (GetMKLDNNCacheSize() != -1) common::LogOnce("MXNET_ONEDNN_CACHE_NUM is set."
                                        "Should only be set if "
                                        "your model has variable input shapes, "
                                        "as cache size may grow unbounded");
@@ -976,6 +976,27 @@ inline void AlignedMemFree(void* ptr) {
 #endif
 }
 
+
+inline index_t div_round(const index_t a, const index_t b) {
+  return (a + b - 1) / b;
+}
+
+inline bool IsPower2(size_t N) {
+  return ((N & (N - 1)) == 0) && N != 0;
+}
+
+inline size_t RoundToPower2(size_t N) {
+  size_t ret = 1;
+  size_t copyN = N;
+  while (N >= 2) {
+    ret *= 2;
+    N /= 2;
+  }
+  if (ret < copyN) {
+    ret *= 2;
+  }
+  return ret;
+}
 
 }  // namespace common
 }  // namespace mxnet

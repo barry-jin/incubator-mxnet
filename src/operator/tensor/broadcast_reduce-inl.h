@@ -360,10 +360,17 @@ void seq_reduce_compute(const size_t N, const size_t M, const bool addto,
                         const Shape<ndim> sshape, const Shape<ndim> rshape,
                         const Shape<ndim> rstride) {
   const int thread_count = engine::OpenMP::Get()->GetRecommendedOMPThreadCount();
-  #pragma omp parallel for num_threads(thread_count) if (N >= thread_count)
-  for (index_t idx = 0; idx < static_cast<index_t>(N); ++idx) {
-    seq_reduce_assign<Reducer, ndim, AType, DType, OType, OP, IndexOP>
-        (idx, M, addto, big, small, bshape, sshape, rshape, rstride, N < thread_count);
+  if (N >= thread_count) {
+    #pragma omp parallel for num_threads(thread_count)
+    for (index_t idx = 0; idx < static_cast<index_t>(N); ++idx) {
+      seq_reduce_assign<Reducer, ndim, AType, DType, OType, OP, IndexOP>
+          (idx, M, addto, big, small, bshape, sshape, rshape, rstride, false);
+    }
+  } else {
+    for (index_t idx = 0; idx < static_cast<index_t>(N); ++idx) {
+      seq_reduce_assign<Reducer, ndim, AType, DType, OType, OP, IndexOP>
+          (idx, M, addto, big, small, bshape, sshape, rshape, rstride, true);
+    }
   }
 }
 
@@ -445,13 +452,13 @@ void ReduceWithExtraMem(Stream<cpu>* s, const TBlob& small, const OpReqType req,
 }
 
 inline size_t ReduceWorkspaceSize(Stream<cpu> *s, const mxnet::TShape& small, const OpReqType req,
-                                  const mxnet::TShape& big, const int type_size) {
+                                  const mxnet::TShape& big) {
   return 0;
 }
 
 inline size_t ReduceWorkspaceSize(Stream<cpu> *s, const mxnet::TShape& small, const OpReqType req,
                                   const mxnet::TShape& big, const mxnet::TShape& lhs,
-                                  const mxnet::TShape& rhs, const int type_size) {
+                                  const mxnet::TShape& rhs) {
   return 0;
 }
 
@@ -539,11 +546,13 @@ struct ReduceImplConfig {
 
   inline ReduceImplConfig(const ::mxnet::TShape& small, const ::mxnet::TShape& big,
                           const ::mxnet::TShape* lhs,
-                          const ::mxnet::TShape* rhs,
-                          const size_t type_size) :
+                          const ::mxnet::TShape* rhs) :
     rshape(small.ndim(), 1), rstride(small.ndim(), 1),
     lhs_shape(small.ndim(), 1), lhs_stride(small.ndim(), 1),
     rhs_shape(small.ndim(), 1), rhs_stride(small.ndim(), 1) {
+    // The largest reduction type currently is (index_t, double) struct
+    // aligned to 16B
+    constexpr size_t max_type_size = 2 * sizeof(double);
     constexpr int maxLoopPerTB = 64;
     int ndim = small.ndim();
 
@@ -646,7 +655,7 @@ struct ReduceImplConfig {
           by++;
         }
         kernel_1.shMemSize = (kernel_1.blockDim.x > 1) ?
-          kernel_1.blockDim.x*by*type_size * 2 : 0;
+          kernel_1.blockDim.x*by*max_type_size * 2 : 0;
         // Maximum number of times we want TB to loop in M
         // Max size of M-block each TB can handle
         int maxMblock = kernel_1.blockDim.x*maxLoopPerTB;
@@ -657,7 +666,7 @@ struct ReduceImplConfig {
             ceil_idiv<unsigned int>(N, kernel_1.blockDim.x));
         kernel_1.gridDim.y = std::min(kBaseGridNum, Mnext);
         kernel_1.shMemSize = (kernel_1.blockDim.y > 1) ?
-          kernel_1.blockDim.x*kernel_1.blockDim.y*type_size * 2 : 0;
+          kernel_1.blockDim.x*kernel_1.blockDim.y*max_type_size * 2 : 0;
         // Maximum number of times we want TB to loop in M
         // Max size of M-block each TB can handle
         int maxMblock = kernel_1.blockDim.y*maxLoopPerTB;
@@ -666,7 +675,7 @@ struct ReduceImplConfig {
 
       if (Mnext > 1) {
         // small_dptr[] is N*Mnext*type_size bytes
-        workspace_size += N*Mnext*sizeof(double);
+        workspace_size += N * Mnext * max_type_size;
         // Set gridDim.y to Mnext
         kernel_1.gridDim.y = std::min(kBaseGridNum, Mnext);
       }
@@ -681,23 +690,19 @@ struct ReduceImplConfig {
 };
 
 inline size_t ReduceWorkspaceSize(Stream<gpu> *s, const ::mxnet::TShape& small, const OpReqType req,
-                                  const ::mxnet::TShape& big, const int type_size) {
+                                  const ::mxnet::TShape& big) {
   if (req == kNullOp) return 0;
-  ReduceImplConfig config(small, big, nullptr, nullptr, type_size);
+  ReduceImplConfig config(small, big, nullptr, nullptr);
   return config.workspace_size;
 }
 
 inline size_t ReduceWorkspaceSize(Stream<gpu> *s, const ::mxnet::TShape& small, const OpReqType req,
                                   const ::mxnet::TShape& big, const ::mxnet::TShape& lhs,
-                                  const ::mxnet::TShape& rhs, const int type_size) {
+                                  const ::mxnet::TShape& rhs) {
   if (req == kNullOp) return 0;
-  ReduceImplConfig config(small, big, &lhs, &rhs, type_size);
+  ReduceImplConfig config(small, big, &lhs, &rhs);
   return config.workspace_size;
 }
-
-#ifdef __CUDACC__
-#include "broadcast_reduce-inl.cuh"
-#endif
 
 #endif  // MXNET_USE_CUDA
 
@@ -784,7 +789,8 @@ void RTCReduce(const OpContext& ctx,
                const TBlob& big,
                const std::string& reducer,
                int ndim,
-               const std::string& OP);
+               const std::string& OP,
+               const bool use_index = false);
 
 void RTCReduce(const OpContext& ctx,
                const TBlob& small,

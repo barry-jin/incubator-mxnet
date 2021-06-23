@@ -677,6 +677,39 @@ def test_sigmoid():
     check_symbolic_forward(y, [xa], [ya])
     check_symbolic_backward(y, [xa], [np.ones(shape)], [ya * (1 - ya)])
 
+def test_log_sigmoid():
+    def flog_sigmoid(a):
+        return np.log(np.divide(1.0, np.add(1.0, np.exp(-a))))
+    def flog_sigmoid_grad(a):
+        return np.divide(1.0, np.add(1.0, np.exp(a)))
+    shape = (3, 4)
+    x = mx.symbol.Variable("x")
+    y = mx.sym.log_sigmoid(x)
+    xa = np.random.uniform(low=-1.0,high=1.0,size=shape)
+    ya = flog_sigmoid(xa)
+    ya_grad = flog_sigmoid_grad(xa)
+    check_numeric_gradient(y, [xa], numeric_eps=1E-3)
+    check_symbolic_forward(y, [xa], [ya])
+    check_symbolic_backward(y, [xa], [np.ones(shape)], [ya_grad])
+
+def test_mish():
+    def fmish(a):
+        return a * np.tanh(np.log1p(np.exp(a)))
+    def fmish_grad(a):
+        softrelu = np.log1p(np.exp(a))
+        tanh = np.tanh(softrelu)
+        sigmoid = np.divide(1.0, (1.0 + np.exp(-a)))
+        return tanh + a * sigmoid * (1.0 - tanh * tanh)
+    shape = (3, 4)
+    x = mx.symbol.Variable("x")
+    y = mx.sym.mish(x)
+    xa = np.random.uniform(low=-1.0,high=1.0,size=shape)
+    ya = fmish(xa)
+    ya_grad = fmish_grad(xa)
+    check_numeric_gradient(y, [xa], numeric_eps=1E-3)
+    check_symbolic_forward(y, [xa], [ya])
+    check_symbolic_backward(y, [xa], [np.ones(shape)], [ya_grad])
+
 def test_shape_array():
     for i in range(1,6):
         shape = rand_shape_nd(i)
@@ -8697,7 +8730,7 @@ def test_get_operator_arguments():
     assert isinstance(operator_arguments, OperatorArguments)
     assert operator_arguments.names == ['data', 'act_type']
     assert operator_arguments.types \
-        == ['NDArray-or-Symbol', "{'relu', 'sigmoid', 'softrelu', 'softsign', 'tanh'}, required"]
+        == ['NDArray-or-Symbol', "{'log_sigmoid', 'mish', 'relu', 'sigmoid', 'softrelu', 'softsign', 'tanh'}, required"]
     assert operator_arguments.narg == 2
 
 
@@ -9453,3 +9486,87 @@ def test_zero_sized_dim():
     seq_last()
     seq_reverse()
     seq_mask()
+
+@mx.util.use_np
+def test_take_grads():
+    # Test for https://github.com/apache/incubator-mxnet/issues/19817
+    from mxnet.gluon.nn import HybridBlock, Conv1D, HybridSequential, HybridLambda, Dense
+    from mxnet import autograd, np as mx_np, npx as mx_npx
+    from mxnet.gluon.loss import L2Loss
+
+    def get_grads(model, grads, ctx=mx.cpu()):
+        pd = model.collect_params()
+        total_grad_l2 = 0
+        total_grad_l1 = 0
+        total_grad_linf = 0
+        for p in pd:
+            try:
+                g = pd[p].grad(ctx) / N
+                g2 = (g**2).sum().as_in_context(mx.cpu()).asscalar()
+                g1 = g.abs().sum().as_in_context(mx.cpu()).asscalar()
+                ginf = g.max().as_in_context(mx.cpu()).asscalar()
+                total_grad_linf = max(total_grad_linf, ginf)
+                total_grad_l2 += g2
+                total_grad_l1 += g1
+            except Exception:
+                pass
+
+        grads.append(total_grad_l1)
+        grads.append(total_grad_l2)
+        grads.append(total_grad_linf)
+
+    def run_model(model, loss, X, Y, num_iters=5):
+        grads = []
+        for i in range(num_iters):
+            with autograd.record():
+                Y_hat = model(X)
+                ll = loss(Y_hat, Y)
+                ll = ll.sum()
+            ll.backward()
+            get_grads(model, grads)
+        return grads
+
+    def dense_layer():
+        den = HybridSequential()
+        den.add(Dense(10, flatten=True, activation='tanh'))
+        return den
+
+    class Model(HybridBlock):
+        def __init__(self, use_take=False, **kwargs):
+            super().__init__()
+            self.use_take = use_take
+            self.den = dense_layer()
+
+        def forward(self, X, axis=1):
+            X1 = self.den(X)
+            print(X1.shape)
+            if self.use_take:
+                X2 = mx_np.take(X1, mx_np.array([0]), axis=axis)
+            else:
+                X2 = mx_npx.slice(X1.T, begin=0, end=1).T
+            return X2
+
+    N = 30
+    T = 20
+    C = 10
+
+    X = np.random.normal(size=(N, T, C))
+    Y = np.random.normal(size=(N, 1))
+    X, Y = mx_np.array(X), mx_np.array(Y)
+    seed = np.random.randint(1000)
+
+    # Using mx_np.take
+    mx.random.seed(seed)
+    model = Model(use_take=True)
+    model.initialize()
+    loss = L2Loss()
+    grads1 = run_model(model, loss, X, Y)
+
+    # Using mx_npx.slice
+    mx.random.seed(seed)
+    model2 = Model(use_take=False)
+    model2.initialize()
+    grads2 = run_model(model2, loss, X, Y)
+
+    for i in range(len(grads1)):
+        assert_almost_equal(grads1[i], grads2[i])

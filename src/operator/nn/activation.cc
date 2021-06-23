@@ -51,6 +51,8 @@ int GradNumInputs(int act_type) {
       case kSoftSign:
       case kTanh:
       case kSigmoid:
+      case kLogSigmoid:
+      case kMish:
         return 3;
       default:
         CHECK(false) << "missing activation type";
@@ -91,6 +93,8 @@ struct ActivationGrad {
         case kSoftSign:
         case kTanh:
         case kSigmoid:
+        case kLogSigmoid:
+        case kMish:
           heads.push_back(n->inputs[activation::kData]);
           break;
         default:
@@ -168,6 +172,8 @@ The following activation functions are supported:
 
 - `relu`: Rectified Linear Unit, :math:`y = max(x, 0)`
 - `sigmoid`: :math:`y = \frac{1}{1 + exp(-x)}`
+- `log_sigmoid`: :math:`y = log(\frac{1}{1 + exp(-x)})`
+- `mish`: :math:`y = x * tanh(log(1 + exp(x)))`
 - `tanh`: Hyperbolic tangent, :math:`y = \frac{exp(x) - exp(-x)}{exp(x) + exp(-x)}`
 - `softrelu`: Soft ReLU, or SoftPlus, :math:`y = log(1 + exp(x))`
 - `softsign`: :math:`y = \frac{x}{1 + abs(x)}`

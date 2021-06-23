@@ -5561,7 +5561,11 @@ def average(a, axis=None, weights=None, returned=False, out=None):
     >>> np.average(data, axis=1, weights=weights)
     array([0.75, 2.75, 4.75])
     """
-    return _api_internal.average(a, weights, axis, returned, weights is not None, out)
+    out = _api_internal.average(a, weights, axis, returned, weights is not None, out)
+    if isinstance(out, NDArray):
+        return out
+    else:
+        return list(out)
 
 
 @set_module('mxnet.ndarray.numpy')
@@ -9476,7 +9480,7 @@ def cumsum(a, axis=None, dtype=None, out=None):
     return _api_internal.cumsum(a, axis, dtype, out)
 
 @set_module('mxnet.ndarray.numpy')
-def reshape(a, newshape, reverse=False, order='C'):
+def reshape(a, newshape, order='C'):
     """
     Gives a new shape to an array without changing its data.
     This function always returns a copy of the input array if
@@ -9537,7 +9541,7 @@ def reshape(a, newshape, reverse=False, order='C'):
            [3., 4.],
            [5., 6.]])
     """
-    return _api_internal.reshape(a, newshape, reverse, order)
+    return _api_internal.reshape(a, newshape, False, order)
 
 @set_module('mxnet.ndarray.numpy')
 def moveaxis(a, source, destination):

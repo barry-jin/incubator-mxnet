@@ -149,6 +149,40 @@ MXNET_OPERATOR_REGISTER_BINARY_WITH_SPARSE_CPU(_backward_sigmoid,
       return ret;
     });
 
+// log_sigmoid
+MXNET_OPERATOR_REGISTER_UNARY(log_sigmoid)
+MXNET_ADD_SPARSE_OP_ALIAS(log_sigmoid)
+.describe(R"code(Computes log_sigmoid of x element-wise.
+
+.. math::
+   y = log(1 / (1 + exp(-x)))
+
+The storage type of ``log_sigmoid`` output is always dense
+
+)code" ADD_FILELINE)
+.set_attr<FCompute>("FCompute<cpu>", UnaryOp::Compute<cpu, mshadow_op::log_sigmoid>)
+.set_attr<nnvm::FGradient>("FGradient", ElemwiseGradUseIn{"_backward_log_sigmoid"});
+
+MXNET_OPERATOR_REGISTER_BINARY_WITH_SPARSE_CPU(_backward_log_sigmoid,
+                                               unary_bwd<mshadow_op::log_sigmoid_grad>);
+
+// mish
+MXNET_OPERATOR_REGISTER_UNARY(mish)
+MXNET_ADD_SPARSE_OP_ALIAS(mish)
+.describe(R"code(Computes mish of x element-wise.
+
+.. math::
+   y = x * tanh(log(1 + exp(x)))
+
+The storage type of ``mish`` output is always dense
+
+)code" ADD_FILELINE)
+.set_attr<FCompute>("FCompute<cpu>", UnaryOp::Compute<cpu, mshadow_op::mish>)
+.set_attr<nnvm::FGradient>("FGradient", ElemwiseGradUseIn{"_backward_mish"});
+
+MXNET_OPERATOR_REGISTER_BINARY_WITH_SPARSE_CPU(_backward_mish,
+                                               unary_bwd<mshadow_op::mish_grad>);
+
 
 
 DMLC_REGISTER_PARAMETER(HardSigmoidParam);
@@ -191,6 +225,9 @@ The storage type of ``softsign`` output is always dense
 )code" ADD_FILELINE)
   .set_attr<FCompute>("FCompute<cpu>", UnaryOp::Compute<cpu, mshadow_op::softsign>)
   .set_attr<nnvm::FGradient>("FGradient", ElemwiseGradUseIn{"_backward_softsign"});
+
+NNVM_REGISTER_OP(softsign)
+.add_alias("_npx_softsign");
 
 MXNET_OPERATOR_REGISTER_BINARY(_backward_softsign)
 .set_attr<FCompute>("FCompute<cpu>", ElemwiseBinaryOp::Compute<cpu,

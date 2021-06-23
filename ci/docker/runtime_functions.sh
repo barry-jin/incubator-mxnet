@@ -96,7 +96,7 @@ gather_licenses() {
     cp tools/dependencies/LICENSE.binary.dependencies licenses/
     cp NOTICE licenses/
     cp LICENSE licenses/
-    cp DISCLAIMER-WIP licenses/
+    cp DISCLAIMER licenses/
 }
 
 # Compiles the dynamic mxnet library
@@ -273,7 +273,7 @@ build_centos7_cpu() {
     ninja
 }
 
-build_centos7_mkldnn() {
+build_centos7_onednn() {
     set -ex
     cd /work/build
     source /opt/rh/devtoolset-7/enable
@@ -483,7 +483,7 @@ build_ubuntu_cpu_clang_tidy() {
     ninja
 }
 
-build_ubuntu_cpu_clang6_mkldnn() {
+build_ubuntu_cpu_clang6_onednn() {
     set -ex
     cd /work/build
     export OpenBLAS_HOME=/usr/local/openblas-clang/
@@ -496,7 +496,7 @@ build_ubuntu_cpu_clang6_mkldnn() {
     ninja
 }
 
-build_ubuntu_cpu_clang100_mkldnn() {
+build_ubuntu_cpu_clang100_onednn() {
     set -ex
     cd /work/build
     export OpenBLAS_HOME=/usr/local/openblas-clang/
@@ -508,7 +508,7 @@ build_ubuntu_cpu_clang100_mkldnn() {
     ninja
 }
 
-build_ubuntu_cpu_mkldnn() {
+build_ubuntu_cpu_onednn() {
     set -ex
     cd /work/build
     CC=gcc-7 CXX=g++-7 cmake \
@@ -523,7 +523,7 @@ build_ubuntu_cpu_mkldnn() {
     ninja
 }
 
-build_ubuntu_cpu_mkldnn_mkl() {
+build_ubuntu_cpu_onednn_mkl() {
     set -ex
     cd /work/build
     CC=gcc-7 CXX=g++-7 cmake \
@@ -593,7 +593,7 @@ build_ubuntu_gpu_tensorrt() {
     ninja
 }
 
-build_ubuntu_gpu_mkldnn() {
+build_ubuntu_gpu_onednn() {
     set -ex
     cd /work/build
     CC=gcc-7 CXX=g++-7 cmake \
@@ -607,7 +607,7 @@ build_ubuntu_gpu_mkldnn() {
     ninja
 }
 
-build_ubuntu_gpu_mkldnn_nocudnn() {
+build_ubuntu_gpu_onednn_nocudnn() {
     set -ex
     cd /work/build
     CC=gcc-7 CXX=g++-7 cmake \
@@ -625,12 +625,18 @@ build_ubuntu_gpu_mkldnn_nocudnn() {
 build_ubuntu_gpu() {
     set -ex
     cd /work/build
+    # Work around to link libcuda to libmxnet
+    # should be removed after https://github.com/apache/incubator-mxnet/issues/17858 is resolved. 
+    ln -s -f /usr/local/cuda/targets/x86_64-linux/lib/stubs/libcuda.so libcuda.so.1
+    export LIBRARY_PATH=${LIBRARY_PATH}:/work/build
+    export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/work/build
     CC=gcc-7 CXX=g++-7 cmake \
         -DCMAKE_BUILD_TYPE="RelWithDebInfo" \
         -DUSE_CUDA=ON \
         -DUSE_NVML=OFF \
         -DMXNET_CUDA_ARCH="$CI_CMAKE_CUDA_ARCH" \
         -DUSE_CUDNN=ON \
+        -DUSE_CPP_PACKAGE=ON \
         -DUSE_BLAS=Open \
         -DUSE_ONEDNN=OFF \
         -DUSE_DIST_KVSTORE=ON \
@@ -707,7 +713,7 @@ sanity_license() {
 
 sanity_cpp() {
     set -ex
-    3rdparty/dmlc-core/scripts/lint.py mxnet cpp include src plugin tests --exclude_path src/operator/contrib/ctc_include include/onednn
+    3rdparty/dmlc-core/scripts/lint.py mxnet cpp include src plugin cpp-package tests --exclude_path src/operator/contrib/ctc_include include/onednn
 }
 
 sanity_python() {
@@ -724,7 +730,7 @@ cd_unittest_ubuntu() {
     set -ex
     source /opt/rh/rh-python36/enable
     export PYTHONPATH=./python/
-    export MXNET_MKLDNN_DEBUG=0  # Ignored if not present
+    export MXNET_ONEDNN_DEBUG=0  # Ignored if not present
     export MXNET_STORAGE_FALLBACK_LOG_VERBOSE=0
     export MXNET_SUBGRAPH_VERBOSE=0
     export MXNET_ENABLE_CYTHON=0
@@ -764,7 +770,7 @@ cd_unittest_ubuntu() {
 unittest_ubuntu_python3_cpu() {
     set -ex
     export PYTHONPATH=./python/
-    export MXNET_MKLDNN_DEBUG=0  # Ignored if not present
+    export MXNET_ONEDNN_DEBUG=0  # Ignored if not present
     export MXNET_STORAGE_FALLBACK_LOG_VERBOSE=0
     export MXNET_SUBGRAPH_VERBOSE=0
     export MXNET_ENABLE_CYTHON=0
@@ -775,10 +781,10 @@ unittest_ubuntu_python3_cpu() {
     pytest -m 'serial' --durations=50 --cov-report xml:tests_unittest.xml --cov-append --verbose tests/python/unittest
 }
 
-unittest_ubuntu_python3_cpu_mkldnn() {
+unittest_ubuntu_python3_cpu_onednn() {
     set -ex
     export PYTHONPATH=./python/
-    export MXNET_MKLDNN_DEBUG=0  # Ignored if not present
+    export MXNET_ONEDNN_DEBUG=0  # Ignored if not present
     export MXNET_STORAGE_FALLBACK_LOG_VERBOSE=0
     export MXNET_SUBGRAPH_VERBOSE=0
     export MXNET_ENABLE_CYTHON=0
@@ -793,7 +799,7 @@ unittest_ubuntu_python3_cpu_mkldnn() {
 unittest_ubuntu_python3_gpu() {
     set -ex
     export PYTHONPATH=./python/
-    export MXNET_MKLDNN_DEBUG=0 # Ignored if not present
+    export MXNET_ONEDNN_DEBUG=0 # Ignored if not present
     export MXNET_STORAGE_FALLBACK_LOG_VERBOSE=0
     export MXNET_SUBGRAPH_VERBOSE=0
     export CUDNN_VERSION=${CUDNN_VERSION:-7.0.3}
@@ -811,7 +817,7 @@ unittest_ubuntu_python3_gpu() {
 unittest_ubuntu_python3_gpu_cython() {
     set -ex
     export PYTHONPATH=./python/
-    export MXNET_MKLDNN_DEBUG=1 # Ignored if not present
+    export MXNET_ONEDNN_DEBUG=1 # Ignored if not present
     export MXNET_STORAGE_FALLBACK_LOG_VERBOSE=0
     export MXNET_SUBGRAPH_VERBOSE=0
     export CUDNN_VERSION=${CUDNN_VERSION:-7.0.3}
@@ -876,6 +882,12 @@ unittest_centos7_gpu() {
         OMP_NUM_THREADS=$(expr $(nproc) / 4) pytest -m 'not serial' -k 'test_operator' -n 4 --durations=50 --cov-report xml:tests_gpu.xml --cov-append --verbose tests/python/gpu
     pytest -m 'serial' --durations=50 --cov-report xml:tests_gpu.xml --cov-append --verbose tests/python/gpu
     pytest --durations=50 --cov-report xml:tests_gpu.xml --cov-append --verbose tests/python/gpu/test_amp_init.py
+}
+
+integrationtest_ubuntu_cpp_package_gpu() {
+    set -ex
+    export DMLC_LOG_STACK_TRACE_DEPTH=10
+    cpp-package/tests/ci_test.sh
 }
 
 integrationtest_ubuntu_cpu_onnx() {
@@ -978,7 +990,7 @@ test_ubuntu_cpu_python3() {
 unittest_ubuntu_python3_arm() {
     set -ex
     export PYTHONPATH=./python/
-    export MXNET_MKLDNN_DEBUG=0  # Ignored if not present
+    export MXNET_ONEDNN_DEBUG=0  # Ignored if not present
     export MXNET_STORAGE_FALLBACK_LOG_VERBOSE=0
     export MXNET_SUBGRAPH_VERBOSE=0
     export MXNET_ENABLE_CYTHON=0
@@ -1159,9 +1171,11 @@ build_docs() {
     pushd docs/_build
     tar -xzf jekyll-artifacts.tgz
     python_doc_folder='html/api/python/docs'
+    api_folder='html/api'
 
     # Python has it's own landing page/site so we don't put it in /docs/api
     mkdir -p $python_doc_folder && tar -xzf python-artifacts.tgz --directory $python_doc_folder
+    mkdir -p $api_folder/cpp/docs/api && tar -xzf c-artifacts.tgz --directory $api_folder/cpp/docs/api
 
      # check if .htaccess file exists
     if [ ! -f "html/.htaccess" ]; then
@@ -1210,7 +1224,9 @@ build_docs_beta() {
     pushd docs/_build
     tar -xzf jekyll-artifacts.tgz
     python_doc_folder="html/versions/$BRANCH/api/python/docs"
+    cpp_doc_folder="html/versions/$BRANCH/api/cpp/docs"
     mkdir -p $python_doc_folder && tar -xzf python-artifacts.tgz --directory $python_doc_folder
+    mkdir -p $cpp_doc_folder && tar -xzf c-artifacts.tgz --directory $cpp_doc_folder
     GZIP=-9 tar -zcvf beta_website.tgz -C html .
     popd
 }
@@ -1291,7 +1307,7 @@ build_static_libmxnet() {
 # Tests CD PyPI packaging in CI
 ci_package_pypi() {
     set -ex
-    # copies mkldnn header files to 3rdparty/onednn/include/oneapi/dnnl/ as in CD
+    # copies onednn header files to 3rdparty/onednn/include/oneapi/dnnl/ as in CD
     mkdir -p 3rdparty/onednn/include/oneapi/dnnl
     cp include/onednn/oneapi/dnnl/dnnl_version.h 3rdparty/onednn/include/oneapi/dnnl/.
     cp include/onednn/oneapi/dnnl/dnnl_config.h 3rdparty/onednn/include/oneapi/dnnl/.
