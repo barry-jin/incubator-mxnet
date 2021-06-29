@@ -292,14 +292,14 @@ def test_quantized_conv():
 
             def forward(self, x):
                 ctx = x.ctx
-                weight = self.weight.data().as_in_ctx(ctx)
-                bias = self.bias.data().as_in_ctx(ctx) if self.use_bias else None
-                min_data = self.min_data.data().as_in_ctx(ctx)
-                max_data = self.max_data.data().as_in_ctx(ctx)
-                min_weight = self.min_weight.data().as_in_ctx(ctx)
-                max_weight = self.max_weight.data().as_in_ctx(ctx)
-                min_bias = self.min_bias.data().as_in_ctx(ctx) if self.use_bias else None
-                max_bias = self.max_bias.data().as_in_ctx(ctx) if self.use_bias else None
+                weight = self.weight.data(ctx)
+                bias = self.bias.data(ctx) if self.use_bias else None
+                min_data = self.min_data.data(ctx)
+                max_data = self.max_data.data(ctx)
+                min_weight = self.min_weight.data(ctx)
+                max_weight = self.max_weight.data(ctx)
+                min_bias = self.min_bias.data(ctx) if self.use_bias else None
+                max_bias = self.max_bias.data(ctx) if self.use_bias else None
                 out = npx.quantized_conv(data=x, weight=weight, bias=bias, 
                                          min_data=min_data, max_data=max_data,
                                          min_weight=min_weight, max_weight=max_weight,
@@ -656,14 +656,14 @@ def test_quantized_fc():
 
             def forward(self, x):
                 ctx = x.ctx
-                weight = self.weight.data().as_in_ctx(ctx)
-                bias = self.bias.data().as_in_ctx(ctx) if self.use_bias else None
-                min_data = self.min_data.data().as_in_ctx(ctx)
-                max_data = self.max_data.data().as_in_ctx(ctx)
-                min_weight = self.min_weight.data().as_in_ctx(ctx)
-                max_weight = self.max_weight.data().as_in_ctx(ctx)
-                min_bias = self.min_bias.data().as_in_ctx(ctx) if self.use_bias else None
-                max_bias = self.max_bias.data().as_in_ctx(ctx) if self.use_bias else None
+                weight = self.weight.data(ctx)
+                bias = self.bias.data(ctx) if self.use_bias else None
+                min_data = self.min_data.data(ctx)
+                max_data = self.max_data.data(ctx)
+                min_weight = self.min_weight.data(ctx)
+                max_weight = self.max_weight.data(ctx)
+                min_bias = self.min_bias.data(ctx) if self.use_bias else None
+                max_bias = self.max_bias.data(ctx) if self.use_bias else None
                 out = npx.quantized_fully_connected(data=x, weight=weight, bias=bias, 
                                                     min_data=min_data, max_data=max_data,
                                                     min_weight=min_weight, max_weight=max_weight,
@@ -760,9 +760,9 @@ def test_quantized_embedding():
 
             def forward(self, x):
                 ctx = x.ctx
-                weight = self.weight.data().as_in_ctx(ctx)
-                min_weight = self.min_weight.data().as_in_ctx(ctx)
-                max_weight = self.max_weight.data().as_in_ctx(ctx)
+                weight = self.weight.data(ctx)
+                min_weight = self.min_weight.data(ctx)
+                max_weight = self.max_weight.data(ctx)
                 out = npx.quantized_embedding(data=x, weight=weight,
                                               min_weight=min_weight,
                                               max_weight=max_weight,
