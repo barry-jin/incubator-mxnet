@@ -19,14 +19,14 @@ validation_transformer = transforms.Compose([
 
 # loading the data and apply pre-processing(transforms) on images
 train_data = gluon.data.DataLoader(
-    gluon.data.vision.ImageFolderDataset(train_path, transform=training_transformer),
-    batch_size=batch_size, shuffle=True, num_workers=num_workers)
+    gluon.data.vision.ImageFolderDataset(train_path).transform_first(training_transformer),
+    batch_size=batch_size, shuffle=True, num_workers=num_workers, try_nopython=True)
 
 val_data = gluon.data.DataLoader(
-    gluon.data.vision.ImageFolderDataset(val_path, transform=validation_transformer),
-    batch_size=batch_size, shuffle=False, num_workers=num_workers)
+    gluon.data.vision.ImageFolderDataset(val_path).transform(validation_transformer),
+    batch_size=batch_size, shuffle=False, num_workers=num_workers, try_nopython=False)
 
 test_data = gluon.data.DataLoader(
-    gluon.data.vision.ImageFolderDataset(test_path, transform=validation_transformer),
-    batch_size=batch_size, shuffle=False, num_workers=num_workers)
+    gluon.data.vision.ImageFolderDataset(test_path).transform_first(validation_transformer),
+    batch_size=batch_size, shuffle=False, num_workers=num_workers, try_nopython=None)
 ```
