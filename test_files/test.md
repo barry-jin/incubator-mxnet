@@ -1,32 +1,22 @@
 ```{.python .input}
-# Pre-processing transformers
-training_transformer = transforms.Compose([
-    transforms.RandomResizedCrop(224),
-    transforms.RandomFlipLeftRight(),
-    transforms.RandomColorJitter(brightness=jitter_param, contrast=jitter_param,
-                                 saturation=jitter_param),
-    transforms.RandomLighting(lighting_param),
-    transforms.ToTensor(),
-    transforms.Normalize(mean, std)
-])
+class Net(nn.HybridBlock):
+    def __init__(self, prefix=None, **kwargs):
+        super(Net, self).__init__(prefix=prefix, **kwargs)
+        with self.name_scope():
+            self.hidden1 = nn.Dense(256, activation='relu')
+            self.a = self.params.get('a', shape=(1, 2, 3, 4))
+    
+    def hybrid_forward(self, F, x, a):
+        x1 = x.expand_dims(0)
+        x2 = x.reshape(-1, 0, -2)
+        x3 = F.concat(a, x1)
+        x4 = F.dot(x2, x3.T)
+        x5 = self.hidden1(x4)
+        return F.mean(x5, axis=1, exclude=1)
 
-validation_transformer = transforms.Compose([
-    transforms.Resize(256),
-    transforms.CenterCrop(224),
-    transforms.ToTensor(),
-    transforms.Normalize(mean, std)
-])
 
-# loading the data and apply pre-processing(transforms) on images
-train_data = gluon.data.DataLoader(
-    gluon.data.vision.ImageFolderDataset(train_path).transform_first(training_transformer),
-    batch_size=batch_size, shuffle=True, num_workers=num_workers, try_nopython=True)
-
-val_data = gluon.data.DataLoader(
-    gluon.data.vision.ImageFolderDataset(val_path).transform(validation_transformer),
-    batch_size=batch_size, shuffle=False, num_workers=num_workers, try_nopython=False)
-
-test_data = gluon.data.DataLoader(
-    gluon.data.vision.ImageFolderDataset(test_path).transform_first(validation_transformer),
-    batch_size=batch_size, shuffle=False, num_workers=num_workers, try_nopython=None)
+input = mx.random.uniform(shape=(2,3,4))
+net = Net(prefix="net")
+net.initialize()
+net(input)
 ```
