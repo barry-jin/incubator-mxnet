@@ -5,5 +5,5 @@ rmsprop_optimizer = optimizer.RMSProp(learning_rate=0.001, gamma1=0.9, gamma2=0.
 trainer = gluon.Trainer(net.collect_params(), optimizer=adagrad_optimizer)
 
 # Metrics
-acc = mx.metric.Accuracy()
+acc = mx.gluon.metric.Accuracy()
 ```
